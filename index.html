@@ -1445,9 +1445,20 @@
       label: 'Dhammapada',
       tradition: 'Buddhism',
       license: 'CC0 public domain dedication — Bhikkhu Sujato / SuttaCentral',
-      // SuttaCentral serves the Dhammapada in its 26 traditional vagga (chapter)
-      // ranges rather than as one file, so we fetch each and merge.
+      /*
+       * Fetches the plain-English translation files directly from SuttaCentral's
+       * own bilara-data repo on GitHub (published branch), instead of their
+       * `/api/bilarasuttas/...` endpoint. That API returns several parallel
+       * segment maps for the same sutta in one payload — root-language (Pali,
+       * itself in Latin transliteration so it can't be told apart from English
+       * by script alone), an HTML-templated variant, and the plain translation —
+       * with no reliable way to tell which map is which from content alone,
+       * which is what caused HTML/placeholder markup to show up as "code"
+       * instead of readable text. These files contain only the English
+       * translation, so there's nothing left to disambiguate.
+       */
       fetchRows: async () => {
+        const BASE = 'https://raw.githubusercontent.com/suttacentral/bilara-data/published/translation/en/sujato/sutta/kn/dhp';
         const VAGGAS = [
           'dhp1-20','dhp21-32','dhp33-43','dhp44-59','dhp60-75','dhp76-89','dhp90-99',
           'dhp100-115','dhp116-128','dhp129-145','dhp146-156','dhp157-166','dhp167-178',
@@ -1457,9 +1468,24 @@
         ];
         const chunks = await Promise.all(VAGGAS.map(async (uid) => {
           try {
-            const res = await fetch(`https://suttacentral.net/api/bilarasuttas/${uid}/sujato?lang=en`);
+            const res = await fetch(`${BASE}/${uid}_translation-en-sujato.json`);
             if (!res.ok) return [];
-            return parseBilaraSegments(await res.json());
+            const data = await res.json();
+            const byVerse = {};
+            Object.entries(data).forEach(([segId, text]) => {
+              const m = segId.match(/^(dhp\d+)[:.](\d+)/i);
+              if (!m) return;
+              // Segments numbered 0.x are chapter headings/titles, not verse content.
+              if (m[2] === '0') return;
+              const clean = stripHtml(String(text)).trim();
+              if (!clean) return;
+              const key = m[1].toLowerCase();
+              (byVerse[key] = byVerse[key] || []).push(clean);
+            });
+            return Object.entries(byVerse).map(([key, lines]) => ({
+              ref: `Dhammapada ${key.replace(/^dhp/i, '')}`,
+              text: lines.join(' ').replace(/\s+/g, ' ').trim()
+            })).filter(r => r.text.length > 0);
           } catch (err) {
             return [];
           }
@@ -1493,84 +1519,6 @@
       .replace(/&#0*39;/gi, "'")
       .replace(/\s+/g, ' ')
       .trim();
-  }
-
-  function looksLikeCleanProse(raw) {
-    const tagCount = (raw.match(/<[a-z/!][^>]*>/gi) || []).length;
-    if (tagCount > 0 && tagCount * 20 > raw.length) return false; // markup-dominated
-    const plain = stripHtml(raw);
-    if (plain.length < 2) return false;
-    const letters = plain.replace(/[^A-Za-z\u0080-\u024F]/g, '');
-    return letters.length / plain.length > 0.5; // mostly Latin-script prose
-  }
-
-  function parseBilaraSegments(data) {
-    if (!data || typeof data !== 'object') return [];
-
-    // A template/scaffold value (SuttaCentral's "html_text") looks like:
-    //   <blockquote class='gatha'><p><span class='verse-line'>{}</span>...
-    // — an HTML wrapper with "{}" placeholders meant to be filled in by the
-    // *actual* translation text elsewhere. It is never usable as content on
-    // its own, no matter how it scores on "looks like prose," so it gets
-    // disqualified outright rather than merely down-scored.
-    const isTemplateScaffold = (v) => /\{\s*\}/.test(v) || /class\s*=\s*['"]/.test(v);
-
-    const isSegmentMap = (obj) => {
-      if (!obj || typeof obj !== 'object' || Array.isArray(obj)) return false;
-      const entries = Object.entries(obj);
-      if (!entries.length) return false;
-      if (!entries.every(([k, v]) => typeof v === 'string' && /^dhp\d+[:.]/i.test(k))) return false;
-      // Reject the whole map if a sample of it is templated markup rather
-      // than plain segment text.
-      const sample = entries.slice(0, 8).map(([, v]) => v);
-      const scaffoldCount = sample.filter(isTemplateScaffold).length;
-      return scaffoldCount === 0;
-    };
-
-    // Collect every segment-map-shaped object anywhere in the payload —
-    // there may be several (root / translation / reference / ...). Any
-    // html/template map was already excluded by isSegmentMap above.
-    const candidates = [];
-    const collect = (obj, depth) => {
-      if (!obj || typeof obj !== 'object' || Array.isArray(obj) || depth > 3) return;
-      if (isSegmentMap(obj)) { candidates.push(obj); return; }
-      Object.values(obj).forEach(v => { if (v && typeof v === 'object') collect(v, depth + 1); });
-    };
-    collect(data, 0);
-
-    // Nothing usable in this payload (e.g. only an html template came
-    // back) — fail honestly with no rows rather than display a scaffold.
-    if (!candidates.length) return [];
-
-    // Score each remaining candidate by how much of a small sample looks
-    // like clean English prose rather than a non-Latin script — then use
-    // the best-scoring map, not just the biggest one.
-    const score = (map) => {
-      const sample = Object.values(map).slice(0, 10);
-      return sample.filter(looksLikeCleanProse).length / Math.max(1, sample.length);
-    };
-    candidates.sort((a, b) => score(b) - score(a));
-    const bestMap = Object.entries(candidates[0]);
-
-    const byVerse = {};
-    bestMap.forEach(([segId, text]) => {
-      const m = segId.match(/^(dhp\d+)[:.](\d+)/i);
-      if (!m) return;
-      // Segments numbered 0.x are chapter headings/titles, not verse content.
-      if (m[2] === '0') return;
-      // Final safety net: never emit a line that still has an unresolved
-      // placeholder or markup attribute in it.
-      if (isTemplateScaffold(text)) return;
-      const key = m[1].toLowerCase();
-      const clean = stripHtml(text);
-      if (!clean) return;
-      (byVerse[key] = byVerse[key] || []).push(clean);
-    });
-
-    return Object.entries(byVerse).map(([key, lines]) => ({
-      ref: `Dhammapada ${key.replace(/^dhp/i, '')}`,
-      text: lines.join(' ').replace(/\s+/g, ' ').trim()
-    })).filter(r => r.text.length > 0);
   }
 
   /*
