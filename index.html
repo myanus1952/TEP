@@ -976,7 +976,6 @@
   const emptyEl = document.getElementById('empty');
 
   let activeFilter = 'all';
-  let activeSourceFilter = 'all';
 
   function bibleLink(ref) {
     const clean = ref.replace(/\s*\(.*?\)\s*$/, '').trim();
@@ -1243,25 +1242,12 @@
     }
   }
 
-  // Keeps the "other traditions' own texts" panel in step with whichever
-  // religion is selected in the sidebar — the sidebar is now the single
-  // control for which text is visible.
-  function syncSourceFilterToReligion(religion) {
-    if (religion === 'all') {
-      activeSourceFilter = 'all';
-      return;
-    }
-    const match = SOURCE_TEXTS.find(s => s.tradition === religion);
-    activeSourceFilter = match ? match.id : `none:${religion}`;
-  }
-
   searchInput.addEventListener('input', render);
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
       chips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       activeFilter = chip.dataset.filter;
-      syncSourceFilterToReligion(activeFilter);
       render();
     });
   });
@@ -1492,22 +1478,95 @@
         }));
         return chunks.flat();
       }
+    },
+    /*
+     * The six canonical Sunni hadith collections (Kutub al-Sittah), from the
+     * same author/project as the Qur'an source above (fawazahmed0), same
+     * Unlicense terms. Each collection is one large JSON file — verified
+     * shape: { metadata, hadiths: [{ hadithnumber, text, reference: {book,
+     * hadith} }] } — so no discovery or per-chunk fetching is needed, unlike
+     * Dhammapada above.
+     */
+    {
+      id: 'hadith-bukhari',
+      label: 'Sahih al-Bukhari',
+      tradition: 'Islam',
+      license: 'Unlicense (public domain dedication) — fawazahmed0/hadith-api',
+      urls: ['https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-bukhari.min.json'],
+      parse: (data) => normalizeVerseList(data, (row) => {
+        const ref = row.reference;
+        return (ref && ref.book != null && ref.hadith != null)
+          ? `Sahih al-Bukhari ${ref.book}:${ref.hadith}`
+          : `Sahih al-Bukhari #${row.hadithnumber}`;
+      })
+    },
+    {
+      id: 'hadith-muslim',
+      label: 'Sahih Muslim',
+      tradition: 'Islam',
+      license: 'Unlicense (public domain dedication) — fawazahmed0/hadith-api',
+      urls: ['https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-muslim.min.json'],
+      parse: (data) => normalizeVerseList(data, (row) => {
+        const ref = row.reference;
+        return (ref && ref.book != null && ref.hadith != null)
+          ? `Sahih Muslim ${ref.book}:${ref.hadith}`
+          : `Sahih Muslim #${row.hadithnumber}`;
+      })
+    },
+    {
+      id: 'hadith-abudawud',
+      label: 'Sunan Abu Dawud',
+      tradition: 'Islam',
+      license: 'Unlicense (public domain dedication) — fawazahmed0/hadith-api',
+      urls: ['https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-abudawud.min.json'],
+      parse: (data) => normalizeVerseList(data, (row) => {
+        const ref = row.reference;
+        return (ref && ref.book != null && ref.hadith != null)
+          ? `Sunan Abu Dawud ${ref.book}:${ref.hadith}`
+          : `Sunan Abu Dawud #${row.hadithnumber}`;
+      })
+    },
+    {
+      id: 'hadith-tirmidhi',
+      label: 'Jami at-Tirmidhi',
+      tradition: 'Islam',
+      license: 'Unlicense (public domain dedication) — fawazahmed0/hadith-api',
+      urls: ['https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-tirmidhi.min.json'],
+      parse: (data) => normalizeVerseList(data, (row) => {
+        const ref = row.reference;
+        return (ref && ref.book != null && ref.hadith != null)
+          ? `Jami at-Tirmidhi ${ref.book}:${ref.hadith}`
+          : `Jami at-Tirmidhi #${row.hadithnumber}`;
+      })
+    },
+    {
+      id: 'hadith-nasai',
+      label: "Sunan an-Nasa'i",
+      tradition: 'Islam',
+      license: 'Unlicense (public domain dedication) — fawazahmed0/hadith-api',
+      urls: ['https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-nasai.min.json'],
+      parse: (data) => normalizeVerseList(data, (row) => {
+        const ref = row.reference;
+        return (ref && ref.book != null && ref.hadith != null)
+          ? `Sunan an-Nasa'i ${ref.book}:${ref.hadith}`
+          : `Sunan an-Nasa'i #${row.hadithnumber}`;
+      })
+    },
+    {
+      id: 'hadith-ibnmajah',
+      label: 'Sunan Ibn Majah',
+      tradition: 'Islam',
+      license: 'Unlicense (public domain dedication) — fawazahmed0/hadith-api',
+      urls: ['https://cdn.jsdelivr.net/gh/fawazahmed0/hadith-api@1/editions/eng-ibnmajah.min.json'],
+      parse: (data) => normalizeVerseList(data, (row) => {
+        const ref = row.reference;
+        return (ref && ref.book != null && ref.hadith != null)
+          ? `Sunan Ibn Majah ${ref.book}:${ref.hadith}`
+          : `Sunan Ibn Majah #${row.hadithnumber}`;
+      })
     }
   ];
 
-  /*
-   * SuttaCentral's "bilara" payload holds several parallel segment maps for
-   * the same sutta — root-language (Pali), translation (English), and an
-   * html-flavored variant with markup/reference tags baked into the strings:
-   *   { root_text: {"dhp1:1.1": "..."}, translation_text: {...}, html_text: {...} }
-   * Blindly taking "whichever map has the most entries" can grab the Pali
-   * or the markup-laden html map instead of clean English prose — which is
-   * exactly what showed up as "code" instead of text. So instead we collect
-   * every segment-map-shaped object in the payload, score each by how much
-   * it looks like plain Latin-script prose (not markup, not another script),
-   * and take the best-scoring one. We also strip any leftover HTML tags/
-   * entities from the final text as a safety net either way.
-   */
   function stripHtml(str) {
     return str
       .replace(/<[^>]*>/g, ' ')
@@ -1973,30 +2032,37 @@
 
     if (SOURCE_TEXTS.length === 0) { section.style.display = 'none'; return; }
 
-    const selectedSource = activeSourceFilter === 'all' ? null : SOURCE_TEXTS.find(s => s.id === activeSourceFilter);
-    const filteringToUncoveredReligion = activeSourceFilter !== 'all' && !selectedSource;
+    // A tradition (e.g. Islam) can now have several source texts (Qur'an
+    // plus the six hadith collections), so filtering is by a *list* of
+    // matching sources, not a single one.
+    const matchingSources = activeFilter === 'all' ? SOURCE_TEXTS : SOURCE_TEXTS.filter(s => s.tradition === activeFilter);
+    const filteringToUncoveredReligion = activeFilter !== 'all' && matchingSources.length === 0;
 
     if (heading) {
-      heading.textContent = selectedSource
-        ? `From ${selectedSource.tradition}'s own text — ${selectedSource.label}`
-        : (filteringToUncoveredReligion ? `From ${activeFilter}'s own text` : `From other traditions' own texts`);
+      heading.textContent = filteringToUncoveredReligion
+        ? `From ${activeFilter}'s own text`
+        : (activeFilter === 'all'
+            ? `From other traditions' own texts`
+            : `From ${activeFilter}'s own text${matchingSources.length > 1 ? 's' : ''}`);
     }
 
     // The sidebar has a religion selected that has no primary text loaded
     // (e.g. Atheism, Humanism) — hide the results list and say so plainly.
     if (filteringToUncoveredReligion) {
       section.style.display = 'block';
-      container.innerHTML = `<p class="source-tab-note">No primary source text is loaded for ${escapeHtml(activeFilter)} yet. Select "All" or Islam, Hinduism, or Buddhism to see a loaded text.</p>`;
+      container.innerHTML = `<p class="source-tab-note">No primary source text is loaded for ${escapeHtml(activeFilter)} yet. Select "All" or a tradition with a loaded text.</p>`;
       return;
     }
 
-    // A real source is selected but hasn't finished loading — say that too,
-    // even before anything has been typed.
-    if (selectedSource && sourceStatus[selectedSource.id] !== 'ready') {
+    // A religion is selected but none of its sources have finished loading —
+    // say that too, even before anything has been typed.
+    const readySources = matchingSources.filter(s => sourceStatus[s.id] === 'ready');
+    if (activeFilter !== 'all' && readySources.length === 0) {
       section.style.display = 'block';
-      const st = sourceStatus[selectedSource.id];
-      const reason = st === 'loading' ? 'is still downloading' : "hasn't loaded yet";
-      container.innerHTML = `<p class="source-tab-note">${escapeHtml(selectedSource.label)} ${reason}. Check Settings → Source Texts to re-check, or try again once you're online.</p>`;
+      const anyLoading = matchingSources.some(s => sourceStatus[s.id] === 'loading');
+      const reason = anyLoading ? 'is still downloading' : "hasn't loaded yet";
+      const label = matchingSources.length === 1 ? matchingSources[0].label : `${activeFilter}'s texts`;
+      container.innerHTML = `<p class="source-tab-note">${escapeHtml(label)} ${reason}. Check Settings → Source Texts to re-check, or try again once you're online.</p>`;
       return;
     }
 
@@ -2007,13 +2073,14 @@
     }
 
     let allMatches = sourceFuse.search(query);
-    if (activeSourceFilter !== 'all') {
-      allMatches = allMatches.filter(m => m.item.sourceId === activeSourceFilter);
+    if (activeFilter !== 'all') {
+      const readyIds = new Set(readySources.map(s => s.id));
+      allMatches = allMatches.filter(m => readyIds.has(m.item.sourceId));
     }
 
     if (allMatches.length === 0) {
       section.style.display = 'block';
-      container.innerHTML = `<p class="source-tab-note">No matches for &ldquo;${escapeHtml(query)}&rdquo;${activeSourceFilter !== 'all' ? ' in this text' : ''}.</p>`;
+      container.innerHTML = `<p class="source-tab-note">No matches for &ldquo;${escapeHtml(query)}&rdquo;${activeFilter !== 'all' ? ' in this text' : ''}.</p>`;
       return;
     }
     const matches = allMatches.slice(0, 25).map(m => m.item);
@@ -2053,7 +2120,13 @@
     { key: 'bible', label: 'Bible (KJV)' },
     { key: 'quran', label: "Qur'an" },
     { key: 'gita', label: 'Bhagavad Gita' },
-    { key: 'dhammapada', label: 'Dhammapada' }
+    { key: 'dhammapada', label: 'Dhammapada' },
+    { key: 'hadith-bukhari', label: 'Sahih al-Bukhari' },
+    { key: 'hadith-muslim', label: 'Sahih Muslim' },
+    { key: 'hadith-abudawud', label: 'Sunan Abu Dawud' },
+    { key: 'hadith-tirmidhi', label: 'Jami at-Tirmidhi' },
+    { key: 'hadith-nasai', label: "Sunan an-Nasa'i" },
+    { key: 'hadith-ibnmajah', label: 'Sunan Ibn Majah' }
   ];
 
   // Canonical KJV reading order — BIBLE_BOOKS (declared earlier, for CDN
@@ -2108,6 +2181,12 @@
       const n = parseInt(m[1], 10);
       const start = Math.floor((n - 1) / 50) * 50 + 1;
       return { group: `Verses ${start}–${start + 49}`, chapter: start, verse: n };
+    }
+    if (sourceKey.startsWith('hadith-')) {
+      // Ref format is "<Collection name> <book>:<hadith>", e.g. "Sahih al-Bukhari 12:34".
+      const m = ref.match(/(\d+):(\d+)$/);
+      if (!m) return { group: 'Other', chapter: 999, verse: 0 };
+      return { group: `Book ${m[1]}`, chapter: parseInt(m[1], 10), verse: parseInt(m[2], 10) };
     }
     return null;
   }
