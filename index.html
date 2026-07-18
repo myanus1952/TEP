@@ -362,6 +362,13 @@
   .read-btn:disabled{opacity:0.4;cursor:not-allowed;}
   .read-btn:disabled:hover{background:var(--paper);}
   .read-chapter-row{max-height:260px;overflow-y:auto;padding:4px;border:1.5px solid var(--line);border-radius:8px;}
+  .read-text-select{
+    width:100%;max-width:360px;font-family:'Source Sans 3',sans-serif;font-size:14.5px;color:var(--ink);
+    background:var(--paper);border:1.5px solid var(--ink);border-radius:6px;
+    padding:10px 12px;outline:none;cursor:pointer;
+  }
+  .read-text-select:focus{border-color:var(--navy);}
+  .read-text-select option:disabled{color:var(--ink-soft);}
   .read-empty{
     text-align:center;padding:40px 20px;color:var(--ink-soft);font-size:14px;
     border:1.5px dashed var(--ink);border-radius:8px;margin-top:14px;
@@ -597,6 +604,7 @@
   <h2>Read Full Texts</h2>
   <p>Browse a complete loaded text chapter by chapter — the full document, not just a search snippet or a single cited verse.</p>
   <div class="read-row" id="read-source-picker"></div>
+  <div id="read-text-dropdown" style="margin-top:14px;"></div>
   <div id="read-chapter-picker" style="margin-top:16px;"></div>
   <div id="read-verses"></div>
 </div>
@@ -2117,17 +2125,21 @@
    */
 
   const READ_SOURCES = [
-    { key: 'bible', label: 'Bible (KJV)' },
-    { key: 'quran', label: "Qur'an" },
-    { key: 'gita', label: 'Bhagavad Gita' },
-    { key: 'dhammapada', label: 'Dhammapada' },
-    { key: 'hadith-bukhari', label: 'Sahih al-Bukhari' },
-    { key: 'hadith-muslim', label: 'Sahih Muslim' },
-    { key: 'hadith-abudawud', label: 'Sunan Abu Dawud' },
-    { key: 'hadith-tirmidhi', label: 'Jami at-Tirmidhi' },
-    { key: 'hadith-nasai', label: "Sunan an-Nasa'i" },
-    { key: 'hadith-ibnmajah', label: 'Sunan Ibn Majah' }
+    { key: 'bible', label: 'Bible (KJV)', tradition: 'Christianity' },
+    { key: 'quran', label: "Qur'an", tradition: 'Islam' },
+    { key: 'hadith-bukhari', label: 'Sahih al-Bukhari', tradition: 'Islam' },
+    { key: 'hadith-muslim', label: 'Sahih Muslim', tradition: 'Islam' },
+    { key: 'hadith-abudawud', label: 'Sunan Abu Dawud', tradition: 'Islam' },
+    { key: 'hadith-tirmidhi', label: 'Jami at-Tirmidhi', tradition: 'Islam' },
+    { key: 'hadith-nasai', label: "Sunan an-Nasa'i", tradition: 'Islam' },
+    { key: 'hadith-ibnmajah', label: 'Sunan Ibn Majah', tradition: 'Islam' },
+    { key: 'gita', label: 'Bhagavad Gita', tradition: 'Hinduism' },
+    { key: 'dhammapada', label: 'Dhammapada', tradition: 'Buddhism' }
   ];
+
+  // Display order for the religion picker — READ_SOURCES insertion order
+  // already follows this, but keep it explicit in case entries get reordered.
+  const READ_RELIGION_ORDER = ['Christianity', 'Islam', 'Hinduism', 'Buddhism'];
 
   // Canonical KJV reading order — BIBLE_BOOKS (declared earlier, for CDN
   // fetch filenames) is alphabetical, which would list books completely out
@@ -2144,6 +2156,7 @@
     "1John","2John","3John","Jude","Revelation"
   ];
 
+  let readReligionKey = null; // Selected religion — the dropdown lists this religion's texts
   let readSourceKey = null;
   let readBookKey = null;   // Bible only: selected book name, as it appears in the data
   let readGroupKey = null;  // Bible: selected chapter number; others: surah/chapter/verse-range label
@@ -2209,24 +2222,75 @@
   function renderReadSourcePicker() {
     const picker = document.getElementById('read-source-picker');
     if (!picker) return;
-    picker.innerHTML = READ_SOURCES.map(s => {
-      const ready = readSourceReady(s.key);
-      const activeCls = s.key === readSourceKey ? ' active' : '';
-      return `<button class="read-btn${activeCls}" data-read-source="${s.key}" ${ready ? '' : 'disabled'}>${escapeHtml(s.label)}${ready ? '' : ' (not loaded)'}</button>`;
+
+    const religions = [...new Set(READ_SOURCES.map(s => s.tradition))];
+    religions.sort((a, b) => {
+      const ai = READ_RELIGION_ORDER.indexOf(a), bi = READ_RELIGION_ORDER.indexOf(b);
+      if (ai === -1 && bi === -1) return a.localeCompare(b);
+      if (ai === -1) return 1;
+      if (bi === -1) return -1;
+      return ai - bi;
+    });
+
+    // Default to the first religion so the page never opens on an empty picker.
+    if (!readReligionKey || !religions.includes(readReligionKey)) {
+      readReligionKey = religions[0] || null;
+    }
+
+    picker.innerHTML = religions.map(r => {
+      const activeCls = r === readReligionKey ? ' active' : '';
+      return `<button class="read-btn${activeCls}" data-read-religion="${escapeHtml(r)}">${escapeHtml(r)}</button>`;
     }).join('');
-    picker.querySelectorAll('[data-read-source]').forEach(btn => {
+
+    picker.querySelectorAll('[data-read-religion]').forEach(btn => {
       btn.addEventListener('click', () => {
-        readSourceKey = btn.dataset.readSource;
+        readReligionKey = btn.dataset.readReligion;
+        readSourceKey = null;
         readBookKey = null;
         readGroupKey = null;
         renderReadSourcePicker();
-        renderReadChapterPicker();
-        document.getElementById('read-verses').innerHTML = '';
       });
     });
 
-    // Keep things in sync if data finished loading while this page was already open.
-    if (readSourceKey) renderReadChapterPicker();
+    renderReadTextDropdown();
+  }
+
+  function renderReadTextDropdown() {
+    const container = document.getElementById('read-text-dropdown');
+    if (!container) return;
+    if (!readReligionKey) { container.innerHTML = ''; return; }
+
+    const texts = READ_SOURCES.filter(s => s.tradition === readReligionKey);
+    if (!texts.length) { container.innerHTML = ''; return; }
+
+    // Keep the current selection if it's still one of this religion's texts;
+    // otherwise default to the first ready one (or just the first, if none are).
+    if (!readSourceKey || !texts.some(t => t.key === readSourceKey)) {
+      const firstReady = texts.find(t => readSourceReady(t.key));
+      readSourceKey = (firstReady || texts[0]).key;
+      readBookKey = null;
+      readGroupKey = null;
+    }
+
+    container.innerHTML = `
+      <select class="read-text-select" id="read-text-select">
+        ${texts.map(t => {
+          const ready = readSourceReady(t.key);
+          const selected = t.key === readSourceKey ? 'selected' : '';
+          return `<option value="${t.key}" ${selected} ${ready ? '' : 'disabled'}>${escapeHtml(t.label)}${ready ? '' : ' (not loaded)'}</option>`;
+        }).join('')}
+      </select>
+    `;
+
+    document.getElementById('read-text-select').addEventListener('change', (e) => {
+      readSourceKey = e.target.value;
+      readBookKey = null;
+      readGroupKey = null;
+      document.getElementById('read-verses').innerHTML = '';
+      renderReadChapterPicker();
+    });
+
+    renderReadChapterPicker();
   }
 
   function renderReadChapterPicker() {
