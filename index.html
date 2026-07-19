@@ -487,7 +487,6 @@
     pointer-events:none;
   }
 </style>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js"></script>
 </head>
 <body>
 
@@ -701,10 +700,26 @@
 
 <script>
   let bookmarkIds = new Set();
-  let bibleFuse = null;
-  let sourceFuse = null;
   let allBibleVerses = [];
   let allSourceRows = [];
+
+  // Fuse.js search runs in a background worker so it can never block the
+  // main thread — typing stays responsive no matter how large the indexed
+  // text is or how long a query takes to fuzzy-match against it.
+  let searchWorker = null;
+  let bibleIndexReady = false;
+  let sourceIndexReady = false;
+  let searchReqSeq = 0;
+  let latestSearchReqId = 0;
+  const EMPTY_MATCHES = { total: 0, top: [] };
+  let pendingOriginalSource = EMPTY_MATCHES;
+
+  function initSearchWorker() {
+    if (typeof Worker === 'undefined') return; // no Worker support — search panels degrade to empty, non-fatal
+    searchWorker = new Worker('./search-worker.js');
+    searchWorker.onmessage = handleWorkerMessage;
+  }
+  initSearchWorker();
 
   const ENTRIES = [
     // NOTE: entries marked "VERIFY WORDING" quote from a non-Bible source text
@@ -961,7 +976,7 @@
             <p>"${highlightText(escapeHtml(v.text), trimmed)}"</p>
           </div>
         `).join('')}</div>`
-      : (bibleFuse
+      : (bibleIndexReady
           ? ''
           : `<p class="form-hint">Connect once to download the full Bible so Scripture matches show here too.</p>`);
 
@@ -1182,44 +1197,86 @@
     return card;
   }
 
+  function entriesFor(q) {
+    return q ? ENTRIES.filter(e => score(e, q) > 0) : [];
+  }
+
+  function currentSourceIdWhitelist() {
+    if (activeFilter === 'all') return null;
+    return SOURCE_TEXTS.filter(s => s.tradition === activeFilter && sourceStatus[s.id] === 'ready').map(s => s.id);
+  }
+
+  // Kicks off a search in the worker and remembers this as the most recent
+  // request. Any response whose reqId doesn't match latestSearchReqId by the
+  // time it arrives is from a request that's since been superseded (the user
+  // kept typing, or cleared the box) and gets dropped rather than rendered.
+  function requestSearch(rawQuery, query, phase) {
+    const reqId = ++searchReqSeq;
+    latestSearchReqId = reqId;
+    searchWorker.postMessage({
+      type: 'search',
+      reqId,
+      phase,
+      rawQuery,
+      query,
+      sourceIdWhitelist: currentSourceIdWhitelist()
+    });
+  }
+
   function render() {
     const rawQuery = searchInput.value.trim();
+    latestSearchReqId = ++searchReqSeq; // invalidate any in-flight response from a previous call
 
-    // Try the query exactly as typed first. Longer (multi-word) queries cost
-    // more per Fuse.js pattern match, so each distinct string searched here
-    // is searched exactly once and its result reused everywhere below —
-    // never re-run the same query twice just to "check" it before using it.
-    const entriesFor = (q) => q ? ENTRIES.filter(e => score(e, q) > 0) : [];
-    const versesFor = (q) => (bibleFuse && q) ? bibleFuse.search(q) : [];
-
-    let query = rawQuery;
-    let corrected = false;
-    let bibleMatches = [];
-
-    if (rawQuery) {
-      const originalEntries = entriesFor(rawQuery);
-      const originalVerses = versesFor(rawQuery);
-      bibleMatches = originalVerses;
-
-      // Only reach for spelling correction if the literal query found nothing anywhere.
-      if (originalEntries.length === 0 && originalVerses.length === 0) {
-        const attempt = correctQuery(rawQuery);
-        if (attempt.changed) {
-          const fixedEntries = entriesFor(attempt.corrected);
-          const fixedVerses = versesFor(attempt.corrected);
-          if (fixedEntries.length > 0 || fixedVerses.length > 0) {
-            query = attempt.corrected;
-            corrected = true;
-            bibleMatches = fixedVerses;
-          }
-        }
-      }
+    if (!rawQuery || !searchWorker) {
+      // Empty query, or no Worker support (very old browser) — either way,
+      // the entries list still works instantly; Bible/source panels just
+      // have nothing (or degrade to empty rather than blocking the thread).
+      finalizeRender(rawQuery, rawQuery, false, entriesFor(rawQuery), EMPTY_MATCHES, EMPTY_MATCHES);
+      return;
     }
 
-    const allMatchedEntries = entriesFor(query);
-    renderTopicOverview(query, allMatchedEntries, bibleMatches);
-    renderBibleResults(query, bibleMatches);
-    renderSourceResults(query);
+    requestSearch(rawQuery, rawQuery, 'original');
+  }
+
+  // Only reach for spelling correction if the literal query found nothing
+  // anywhere (no claim entries, no Bible verses) — see finalizeRender for
+  // where a successful/failed correction ends up rendered.
+  function handleWorkerMessage(e) {
+    const msg = e.data;
+    if (msg.type !== 'search-result' || msg.reqId !== latestSearchReqId) return;
+
+    const { rawQuery, phase } = msg;
+
+    if (phase === 'original') {
+      const entries = entriesFor(msg.query);
+      if (entries.length === 0 && msg.bible.total === 0) {
+        const attempt = correctQuery(msg.query);
+        if (attempt.changed) {
+          pendingOriginalSource = msg.source;
+          requestSearch(rawQuery, attempt.corrected, 'correction');
+          return;
+        }
+      }
+      finalizeRender(rawQuery, msg.query, false, entries, msg.bible, msg.source);
+      return;
+    }
+
+    // phase === 'correction'
+    const entries = entriesFor(msg.query);
+    if (entries.length > 0 || msg.bible.total > 0) {
+      finalizeRender(rawQuery, msg.query, true, entries, msg.bible, msg.source);
+    } else {
+      // Correction didn't help either — fall back to the original query's
+      // own source-text matches (if any), which are still valid even though
+      // nothing matched among claim entries or the Bible.
+      finalizeRender(rawQuery, rawQuery, false, [], EMPTY_MATCHES, pendingOriginalSource);
+    }
+  }
+
+  function finalizeRender(rawQuery, query, corrected, allMatchedEntries, bibleResult, sourceResult) {
+    renderTopicOverview(query, allMatchedEntries, bibleResult.top);
+    renderBibleResults(query, bibleResult);
+    renderSourceResults(query, sourceResult);
 
     let matches = ENTRIES
       .map(e => ({ entry: e, s: score(e, query) }))
@@ -1253,14 +1310,13 @@
     }
   }
 
-  // render() runs several Fuse.js searches across tens of thousands of Bible/
-  // source rows — expensive enough that running it synchronously on every
-  // keystroke visibly stalls typing. Debouncing lets keystrokes render
-  // immediately and only pays for the search once typing pauses.
+  // The actual Fuse.js search now runs off-thread in search-worker.js, so
+  // typing can never be blocked by it. This debounce just coalesces a burst
+  // of keystrokes into one worker request instead of one per character.
   let renderDebounceTimer = null;
   function scheduleRender() {
     clearTimeout(renderDebounceTimer);
-    renderDebounceTimer = setTimeout(render, 150);
+    renderDebounceTimer = setTimeout(render, 60);
   }
   searchInput.addEventListener('input', scheduleRender);
   chips.forEach(chip => {
@@ -1711,10 +1767,11 @@
   }
 
   function buildBibleIndex(verses) {
-    bibleFuse = new Fuse(verses, { keys: ['text'], threshold: 0.32, includeScore: true, ignoreLocation: true });
     allBibleVerses = verses;
+    bibleIndexReady = true;
     buildRealWordSet(verses);
     setBibleStatus('ready', `Full Bible loaded — ${verses.length.toLocaleString()} verses searchable offline`);
+    if (searchWorker) searchWorker.postMessage({ type: 'load', name: 'bible', data: verses });
     if (searchInput.value.trim()) render();
     renderReadSourcePicker();
   }
@@ -1844,13 +1901,9 @@
 
   function buildSourceIndex(rows) {
     allSourceRows = rows;
-    if (!rows.length) { sourceFuse = null; renderReadSourcePicker(); return; }
-    sourceFuse = new Fuse(rows, {
-      keys: ['text'],
-      threshold: 0.32,
-      includeScore: true,
-      ignoreLocation: true
-    });
+    sourceIndexReady = rows.length > 0;
+    if (!rows.length) { renderReadSourcePicker(); return; }
+    if (searchWorker) searchWorker.postMessage({ type: 'load', name: 'source', data: rows });
     if (searchInput.value.trim()) render();
     renderReadSourcePicker();
   }
@@ -2044,7 +2097,7 @@
   /* Renders matches from other traditions' texts, showing only the text
      tied to whichever religion is selected in the sidebar (or all of them
      when "All" is selected). The sidebar is the single show/hide control. */
-  function renderSourceResults(query) {
+  function renderSourceResults(query, sourceResult) {
     const section = document.getElementById('source-results-section');
     const container = document.getElementById('source-results');
     const heading = document.getElementById('source-results-heading');
@@ -2086,24 +2139,20 @@
       return;
     }
 
-    if (!query.trim() || !sourceFuse) {
+    if (!query.trim() || !sourceIndexReady) {
       section.style.display = 'none';
       container.innerHTML = '';
       return;
     }
 
-    let allMatches = sourceFuse.search(query);
-    if (activeFilter !== 'all') {
-      const readyIds = new Set(readySources.map(s => s.id));
-      allMatches = allMatches.filter(m => readyIds.has(m.item.sourceId));
-    }
-
-    if (allMatches.length === 0) {
+    // Tradition filtering (by readySources' ids) already happened inside the
+    // worker via sourceIdWhitelist, so sourceResult is ready to use as-is.
+    if (sourceResult.total === 0) {
       section.style.display = 'block';
       container.innerHTML = `<p class="source-tab-note">No matches for &ldquo;${escapeHtml(query)}&rdquo;${activeFilter !== 'all' ? ' in this text' : ''}.</p>`;
       return;
     }
-    const matches = allMatches.slice(0, 25).map(m => m.item);
+    const matches = sourceResult.top.slice(0, 25).map(m => m.item);
     section.style.display = 'block';
 
     // Group by tradition so it reads as "what each religion's own text says".
@@ -2114,7 +2163,7 @@
       (byTradition[trad] = byTradition[trad] || []).push(m);
     });
 
-    const countHtml = `<p class="results-count">Results 1-${matches.length} of <strong>${allMatches.length.toLocaleString()}</strong> for &ldquo;${escapeHtml(query)}&rdquo;</p>`;
+    const countHtml = `<p class="results-count">Results 1-${matches.length} of <strong>${sourceResult.total.toLocaleString()}</strong> for &ldquo;${escapeHtml(query)}&rdquo;</p>`;
 
     container.innerHTML = countHtml + Object.entries(byTradition).map(([tradition, rows]) => `
       <div class="source-group">
@@ -2449,18 +2498,18 @@
 
   const BIBLE_RESULTS_LIMIT = 25;
 
-  function renderBibleResults(query, allMatches) {
+  function renderBibleResults(query, bibleResult) {
     const section = document.getElementById('bible-results-section');
     const container = document.getElementById('bible-results');
-    if (!query.trim() || allMatches.length === 0) {
+    if (!query.trim() || bibleResult.total === 0) {
       section.style.display = 'none';
       container.innerHTML = '';
       return;
     }
-    const matches = allMatches.slice(0, BIBLE_RESULTS_LIMIT);
+    const matches = bibleResult.top.slice(0, BIBLE_RESULTS_LIMIT);
     section.style.display = 'block';
 
-    const countHtml = `<p class="results-count">Results 1-${matches.length} of <strong>${allMatches.length.toLocaleString()}</strong> for &ldquo;${escapeHtml(query)}&rdquo;</p>`;
+    const countHtml = `<p class="results-count">Results 1-${matches.length} of <strong>${bibleResult.total.toLocaleString()}</strong> for &ldquo;${escapeHtml(query)}&rdquo;</p>`;
 
     container.innerHTML = countHtml + matches.map(m => `
       <div class="bible-result-item">
