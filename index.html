@@ -1185,16 +1185,21 @@
   function render() {
     const rawQuery = searchInput.value.trim();
 
-    // Try the query exactly as typed first.
+    // Try the query exactly as typed first. Longer (multi-word) queries cost
+    // more per Fuse.js pattern match, so each distinct string searched here
+    // is searched exactly once and its result reused everywhere below —
+    // never re-run the same query twice just to "check" it before using it.
     const entriesFor = (q) => q ? ENTRIES.filter(e => score(e, q) > 0) : [];
-    const versesFor = (q) => (bibleFuse && q) ? bibleFuse.search(q).slice(0, 8) : [];
+    const versesFor = (q) => (bibleFuse && q) ? bibleFuse.search(q) : [];
 
     let query = rawQuery;
     let corrected = false;
+    let bibleMatches = [];
 
     if (rawQuery) {
       const originalEntries = entriesFor(rawQuery);
       const originalVerses = versesFor(rawQuery);
+      bibleMatches = originalVerses;
 
       // Only reach for spelling correction if the literal query found nothing anywhere.
       if (originalEntries.length === 0 && originalVerses.length === 0) {
@@ -1205,13 +1210,13 @@
           if (fixedEntries.length > 0 || fixedVerses.length > 0) {
             query = attempt.corrected;
             corrected = true;
+            bibleMatches = fixedVerses;
           }
         }
       }
     }
 
     const allMatchedEntries = entriesFor(query);
-    const bibleMatches = (bibleFuse && query.trim()) ? bibleFuse.search(query) : [];
     renderTopicOverview(query, allMatchedEntries, bibleMatches);
     renderBibleResults(query, bibleMatches);
     renderSourceResults(query);
