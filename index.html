@@ -1210,9 +1210,11 @@
   // request. Any response whose reqId doesn't match latestSearchReqId by the
   // time it arrives is from a request that's since been superseded (the user
   // kept typing, or cleared the box) and gets dropped rather than rendered.
+  let searchDispatchedAt = 0;
   function requestSearch(rawQuery, query, phase) {
     const reqId = ++searchReqSeq;
     latestSearchReqId = reqId;
+    searchDispatchedAt = performance.now();
     searchWorker.postMessage({
       type: 'search',
       reqId,
@@ -1244,6 +1246,11 @@
   function handleWorkerMessage(e) {
     const msg = e.data;
     if (msg.type !== 'search-result' || msg.reqId !== latestSearchReqId) return;
+
+    if (msg.timing) {
+      const roundTripMs = +(performance.now() - searchDispatchedAt).toFixed(1);
+      console.log(`[render] "${msg.query}" (${msg.phase}) — round trip ${roundTripMs}ms, worker-reported ${msg.timing.totalMs}ms`, msg.timing);
+    }
 
     const { rawQuery, phase } = msg;
 
