@@ -10,7 +10,14 @@
 // cross-origin importScripts() call is inconsistent (notably on Safari/iOS).
 importScripts('./fuse.min.js');
 
-const FUSE_OPTIONS = { keys: ['text'], threshold: 0.32, includeScore: true, ignoreLocation: true };
+// ignoreFieldNorm: Fuse penalizes matches by default the longer the field
+// they're found in, which is right for something like a product-name search
+// but wrong here — a Hadith entry can run many times longer than a Bible
+// verse, so without this a short/partial query legitimately present in a
+// long Hadith would score too poorly to clear threshold, even though the
+// same text would match fine in a short verse. Disabling it means a match
+// scores on how well it matches, not on how long the surrounding text is.
+const FUSE_OPTIONS = { keys: ['text'], threshold: 0.32, includeScore: true, ignoreLocation: true, ignoreFieldNorm: true };
 
 // Generous margin over every UI section's display cap (25 max) — keeps the
 // postMessage payload small for common queries that match thousands of rows,
