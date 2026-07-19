@@ -1206,14 +1206,25 @@
     return SOURCE_TEXTS.filter(s => s.tradition === activeFilter && sourceStatus[s.id] === 'ready').map(s => s.id);
   }
 
-  // Kicks off a search in the worker and remembers this as the most recent
-  // request. Any response whose reqId doesn't match latestSearchReqId by the
-  // time it arrives is from a request that's since been superseded (the user
-  // kept typing, or cleared the box) and gets dropped rather than rendered.
+  // The worker processes messages strictly one at a time, in the order it
+  // receives them, with no concept of "stale" — it will happily compute a
+  // search for every keystroke of a fast typist even though only the last
+  // one ever gets rendered. Left unchecked, that backlog is exactly what
+  // turned a ~1.5s search into a 10+ second wait: 15 queued searches ahead
+  // of the one you actually typed, each one blocking the next.
+  //
+  // The fix is a hard cap of one search in flight at a time. A new request
+  // that arrives while one is still running doesn't queue behind it — it
+  // just overwrites whatever was queued, so only the latest ever waits, and
+  // it fires the instant the current search returns.
+  let searchInFlight = false;
+  let queuedSearch = null; // { rawQuery, query, phase } — most recent request received while one was in flight
   let searchDispatchedAt = 0;
-  function requestSearch(rawQuery, query, phase) {
+
+  function dispatchSearch(rawQuery, query, phase) {
     const reqId = ++searchReqSeq;
     latestSearchReqId = reqId;
+    searchInFlight = true;
     searchDispatchedAt = performance.now();
     searchWorker.postMessage({
       type: 'search',
@@ -1225,14 +1236,23 @@
     });
   }
 
+  function requestSearch(rawQuery, query, phase) {
+    if (searchInFlight) {
+      queuedSearch = { rawQuery, query, phase };
+      latestSearchReqId = ++searchReqSeq; // the in-flight response, once it arrives, is now stale
+      return;
+    }
+    dispatchSearch(rawQuery, query, phase);
+  }
+
   function render() {
     const rawQuery = searchInput.value.trim();
-    latestSearchReqId = ++searchReqSeq; // invalidate any in-flight response from a previous call
 
-    if (!rawQuery || !searchWorker) {
-      // Empty query, or no Worker support (very old browser) — either way,
-      // the entries list still works instantly; Bible/source panels just
-      // have nothing (or degrade to empty rather than blocking the thread).
+    // Below ~2 characters a fuzzy search across tens of thousands of rows is
+    // mostly noise anyway — skip dispatching it and save the wasted work.
+    if (!rawQuery || rawQuery.length < 2 || !searchWorker) {
+      queuedSearch = null;
+      latestSearchReqId = ++searchReqSeq; // invalidate any in-flight/queued response from a previous call
       finalizeRender(rawQuery, rawQuery, false, entriesFor(rawQuery), EMPTY_MATCHES, EMPTY_MATCHES);
       return;
     }
@@ -1245,7 +1265,16 @@
   // where a successful/failed correction ends up rendered.
   function handleWorkerMessage(e) {
     const msg = e.data;
-    if (msg.type !== 'search-result' || msg.reqId !== latestSearchReqId) return;
+    if (msg.type !== 'search-result') return;
+
+    searchInFlight = false;
+    if (queuedSearch) {
+      const next = queuedSearch;
+      queuedSearch = null;
+      dispatchSearch(next.rawQuery, next.query, next.phase);
+    }
+
+    if (msg.reqId !== latestSearchReqId) return; // stale — a newer request has since superseded this response
 
     if (msg.timing) {
       const roundTripMs = +(performance.now() - searchDispatchedAt).toFixed(1);
@@ -1318,12 +1347,14 @@
   }
 
   // The actual Fuse.js search now runs off-thread in search-worker.js, so
-  // typing can never be blocked by it. This debounce just coalesces a burst
-  // of keystrokes into one worker request instead of one per character.
+  // typing can never be blocked by it. This debounce reduces how many
+  // throwaway searches get dispatched during a typing burst — the in-flight
+  // cap above is what guarantees no backlog, this just cuts how often it
+  // needs to kick in.
   let renderDebounceTimer = null;
   function scheduleRender() {
     clearTimeout(renderDebounceTimer);
-    renderDebounceTimer = setTimeout(render, 60);
+    renderDebounceTimer = setTimeout(render, 150);
   }
   searchInput.addEventListener('input', scheduleRender);
   chips.forEach(chip => {
