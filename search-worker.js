@@ -4,7 +4,11 @@
  * postMessage back — the main thread is never blocked by search cost,
  * regardless of query length or how large the indexed text is.
  */
-importScripts('https://cdnjs.cloudflare.com/ajax/libs/fuse.js/7.0.0/fuse.min.js');
+// Vendored locally (not loaded from a CDN) so this worker never depends on a
+// network fetch to start up — a service worker reliably caches same-origin
+// requests across all browsers, whereas its ability to intercept a Worker's
+// cross-origin importScripts() call is inconsistent (notably on Safari/iOS).
+importScripts('./fuse.min.js');
 
 const FUSE_OPTIONS = { keys: ['text'], threshold: 0.32, includeScore: true, ignoreLocation: true };
 

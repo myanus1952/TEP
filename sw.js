@@ -1,9 +1,10 @@
-const CACHE_NAME = 'tep-shell-v3';
+const CACHE_NAME = 'tep-shell-v4';
 const SHELL_FILES = [
   './',
   './index.html',
   './manifest.json',
-  './search-worker.js'
+  './search-worker.js',
+  './fuse.min.js'
 ];
 
 self.addEventListener('install', (event) => {
