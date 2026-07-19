@@ -935,17 +935,14 @@
     return safeText.replace(re, '<mark class="hl">$1</mark>');
   }
 
-  function renderTopicOverview(query, allMatchedEntries) {
+  function renderTopicOverview(query, allMatchedEntries, bibleMatches) {
     const container = document.getElementById('topic-overview');
     const trimmed = query.trim();
 
     if (trimmed.length < 3) { container.style.display = 'none'; container.innerHTML = ''; return; }
 
     const religions = [...new Set(allMatchedEntries.map(e => e.religion))];
-    let verseMatches = [];
-    if (bibleFuse) {
-      verseMatches = bibleFuse.search(trimmed).slice(0, 3).map(m => m.item);
-    }
+    const verseMatches = bibleMatches.slice(0, 3).map(m => m.item);
 
     if (religions.length === 0 && verseMatches.length === 0) {
       container.style.display = 'none';
@@ -1214,8 +1211,9 @@
     }
 
     const allMatchedEntries = entriesFor(query);
-    renderTopicOverview(query, allMatchedEntries);
-    renderBibleResults(query);
+    const bibleMatches = (bibleFuse && query.trim()) ? bibleFuse.search(query) : [];
+    renderTopicOverview(query, allMatchedEntries, bibleMatches);
+    renderBibleResults(query, bibleMatches);
     renderSourceResults(query);
 
     let matches = ENTRIES
@@ -1250,7 +1248,16 @@
     }
   }
 
-  searchInput.addEventListener('input', render);
+  // render() runs several Fuse.js searches across tens of thousands of Bible/
+  // source rows — expensive enough that running it synchronously on every
+  // keystroke visibly stalls typing. Debouncing lets keystrokes render
+  // immediately and only pays for the search once typing pauses.
+  let renderDebounceTimer = null;
+  function scheduleRender() {
+    clearTimeout(renderDebounceTimer);
+    renderDebounceTimer = setTimeout(render, 150);
+  }
+  searchInput.addEventListener('input', scheduleRender);
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
       chips.forEach(c => c.classList.remove('active'));
@@ -2437,16 +2444,10 @@
 
   const BIBLE_RESULTS_LIMIT = 25;
 
-  function renderBibleResults(query) {
+  function renderBibleResults(query, allMatches) {
     const section = document.getElementById('bible-results-section');
     const container = document.getElementById('bible-results');
-    if (!bibleFuse || !query.trim()) {
-      section.style.display = 'none';
-      container.innerHTML = '';
-      return;
-    }
-    const allMatches = bibleFuse.search(query);
-    if (allMatches.length === 0) {
+    if (!query.trim() || allMatches.length === 0) {
       section.style.display = 'none';
       container.innerHTML = '';
       return;
