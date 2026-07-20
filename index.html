@@ -692,7 +692,7 @@
   <p>When connected to the internet, the app checks for content updates from our content source. This check does not transmit any personal or identifying information.</p>
   <h3>Source Material</h3>
   <p>Original texts included in this app are drawn from public domain sources and open licenses. Where a source requires attribution, that attribution is provided within the relevant entry.</p>
-  <p>Bible text is the King James Version (public domain). The Qur'an translation is supplied by the fawazahmed0/quran-api project, released under the Unlicense (a public domain dedication). Hindu source texts are drawn from openly licensed public-domain translations. The Catholic source text is the Baltimore Catechism (Rev. Thomas L. Kinkead's 1891/1921 "Explanation" edition, via Project Gutenberg), public domain. The seven deuterocanonical books (the Apocrypha) are drawn from the Douay-Rheims translation (Challoner revision), also public domain. A full list of loaded texts and their licenses is shown under Settings → Source Texts.</p>
+  <p>Bible text is the King James Version (public domain). The Qur'an translation is supplied by the fawazahmed0/quran-api project, released under the Unlicense (a public domain dedication). Hindu source texts are drawn from openly licensed public-domain translations. Catholic source texts are the Baltimore Catechism (Rev. Thomas L. Kinkead's 1891/1921 "Explanation" edition, via Project Gutenberg), the dogmatic canons of the Council of Trent (J. Waterworth's 1848 translation), and two pre-1929 papal encyclicals (Rerum Novarum, 1891; Ineffabilis Deus, 1854) — all public domain. The seven deuterocanonical books (the Apocrypha) are drawn from the Douay-Rheims translation (Challoner revision), also public domain. A full list of loaded texts and their licenses is shown under Settings → Source Texts.</p>
   <p>Texts from other traditions are reproduced as published, without editing, so that each tradition's claims can be examined in its own words.</p>
   <h3>Changes to This Policy</h3>
   <p>If this policy changes, the update will be reflected here with a revised date. Continued use of the app after changes constitutes acceptance of the updated policy.</p>
@@ -1033,6 +1033,18 @@
       verses: [
         { ref: "Ephesians 1:7", text: "In whom we have redemption through his blood, the forgiveness of sins, according to the riches of his grace;" },
         { ref: "Colossians 2:13-14", text: "Having forgiven you all trespasses; Blotting out the handwriting of ordinances that was against us, which was contrary to us, and took it out of the way, nailing it to his cross;" }
+      ]
+    },
+    {
+      claim: "Justification by faith alone, with nothing else required, is formally condemned as anathema",
+      religion: "Catholicism",
+      keywords: ["sola fide anathema", "faith alone condemned catholic", "council of trent justification", "trent canon on faith alone"],
+      sourceQuote: { ref: "Council of Trent, Session the Sixth (On Justification), Canon IX", text: "If any one saith, that by faith alone the impious is justified; in such wise as to mean, that nothing else is required to co-operate in order to the obtaining the grace of Justification, and that it is not in any way necessary, that he be prepared and disposed by the movement of his own will; let him be anathema." },
+      note: "This is Trent's direct, formal condemnation of sola fide, the doctrine that justification is by faith alone.",
+      verses: [
+        { ref: "Ephesians 2:8-9", text: "For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast." },
+        { ref: "Romans 3:28", text: "Therefore we conclude that a man is justified by faith without the deeds of the law." },
+        { ref: "Galatians 2:16", text: "Knowing that a man is not justified by the works of the law, but by the faith of Jesus Christ, even we have believed in Jesus Christ, that we might be justified by the faith of Christ, and not by the works of the law: for by the works of the law shall no flesh be justified." }
       ]
     },
     /*
@@ -1875,6 +1887,70 @@
       parse: (data) => Array.isArray(data)
         ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
         : []
+    },
+    /*
+     * The 126 dogmatic canons of the Council of Trent (1545-1563) — the
+     * "if any one saith X, let him be anathema" statements on Justification,
+     * the Sacraments, the Eucharist, Penance, Order, Matrimony, etc. Public
+     * domain (J. Waterworth's 1848 translation). Vendored from a single-page
+     * transcription hosted by the Hanover Historical Texts Project rather
+     * than fetched live — it's plain HTML on an institutional site with no
+     * CORS headers for cross-origin fetch, and no JSON version exists.
+     *
+     * That transcription has a handful of real typos (e.g. "CANON lI." and
+     * "CANON 11." for "CANON II.", "let him be be anathema" for "let him be
+     * anathema") which were corrected during extraction — verified by
+     * checking the canon count for every session/topic against the
+     * unmodified source (all 126 accounted for, none merged or dropped).
+     *
+     * Decrees (as opposed to canons) are not included: Trent's canons are
+     * short, numbered, and self-contained ("if anyone says X, anathema"),
+     * which is what makes them directly comparable entries; the decrees are
+     * long discursive prose better suited to reading in full than to
+     * verse-style search results.
+     */
+    {
+      id: 'trent-canons',
+      label: 'Council of Trent — Canons',
+      tradition: 'Catholicism',
+      license: 'Public domain — J. Waterworth translation (1848), via Hanover Historical Texts Project',
+      urls: ['./trent-canons.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
+    /*
+     * Two pre-1929 papal encyclicals, both firmly public domain by age —
+     * Rerum Novarum (Leo XIII, 1891, the foundational document of Catholic
+     * social teaching) and Ineffabilis Deus (Pius IX, 1854, the dogmatic
+     * definition of the Immaculate Conception, already cited in the CCC-era
+     * entries above via the Baltimore Catechism's summary of it). Vendored
+     * from papalencyclicals.net rather than fetched live (no CORS headers,
+     * and no JSON version exists). That site doesn't number every paragraph
+     * consistently across the whole document, so paragraphs are numbered
+     * sequentially here rather than reusing the site's own inline numbers —
+     * a stable, collision-free citation was judged more important than
+     * matching another site's paragraph numbering exactly.
+     */
+    {
+      id: 'rerum-novarum',
+      label: 'Rerum Novarum (Leo XIII, 1891)',
+      tradition: 'Catholicism',
+      license: 'Public domain (pre-1929)',
+      urls: ['./rerum-novarum.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
+    {
+      id: 'ineffabilis-deus',
+      label: 'Ineffabilis Deus (Pius IX, 1854)',
+      tradition: 'Catholicism',
+      license: 'Public domain (pre-1929)',
+      urls: ['./ineffabilis-deus.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
     }
   ];
 
@@ -2432,7 +2508,10 @@
     { key: 'gita', label: 'Bhagavad Gita', tradition: 'Hinduism' },
     { key: 'dhammapada', label: 'Dhammapada', tradition: 'Buddhism' },
     { key: 'baltimore-catechism', label: 'Baltimore Catechism', tradition: 'Catholicism' },
-    { key: 'deuterocanon', label: 'Apocrypha / Deuterocanon', tradition: 'Apocrypha' }
+    { key: 'deuterocanon', label: 'Apocrypha / Deuterocanon', tradition: 'Apocrypha' },
+    { key: 'trent-canons', label: 'Council of Trent — Canons', tradition: 'Catholicism' },
+    { key: 'rerum-novarum', label: 'Rerum Novarum (1891)', tradition: 'Catholicism' },
+    { key: 'ineffabilis-deus', label: 'Ineffabilis Deus (1854)', tradition: 'Catholicism' }
   ];
 
   // Display order for the religion picker — READ_SOURCES insertion order
@@ -2492,6 +2571,41 @@
       const n = parseInt(m[1], 10);
       const start = Math.floor((n - 1) / 50) * 50 + 1;
       return { group: `Verses ${start}–${start + 49}`, chapter: start, verse: n };
+    }
+    if (sourceKey === 'rerum-novarum' || sourceKey === 'ineffabilis-deus') {
+      const m = ref.match(/para\.\s*(\d+)$/);
+      if (!m) return null;
+      const n = parseInt(m[1], 10);
+      const start = Math.floor((n - 1) / 10) * 10 + 1;
+      return { group: `¶${start}–${start + 9}`, chapter: start, verse: n };
+    }
+    if (sourceKey === 'trent-canons') {
+      const m = ref.match(/^Council of Trent, (.+), Canon ([IVXLCDM]+)$/);
+      if (!m) return null;
+      const TRENT_GROUP_ORDER = [
+        'Session the Sixth (On Justification)',
+        'Session the Seventh (On The Sacraments In General)',
+        'Session the Seventh (On Baptism)',
+        'Session the Seventh (On Confirmation)',
+        'Session the Thirteenth (On The Most Holy Sacrament Of The Eucharist)',
+        'Session the Fourteenth (On The Most Holy Sacrament Of Penance)',
+        'Session the Fourteenth (On The Sacrament Of Extreme Unction)',
+        'Session the Twenty-First (On Communion Under Both Species, And On The Communion Of Infants)',
+        'Session the Twenty-Second (On The Sacrifice Of The Mass)',
+        'Session the Twenty-Third (On The Sacrament Of Order)',
+        'Session the Twenty-Fourth (On The Sacrament Of Matrimony)'
+      ];
+      const ROMAN = { I: 1, V: 5, X: 10, L: 50, C: 100, D: 500, M: 1000 };
+      const toInt = (r) => {
+        let n = 0;
+        for (let i = 0; i < r.length; i++) {
+          const cur = ROMAN[r[i]], next = ROMAN[r[i + 1]];
+          n += (next && cur < next) ? -cur : cur;
+        }
+        return n;
+      };
+      const groupIdx = TRENT_GROUP_ORDER.indexOf(m[1]);
+      return { group: m[1], chapter: groupIdx === -1 ? 999 : groupIdx, verse: toInt(m[2]) };
     }
     if (sourceKey === 'deuterocanon') {
       const m = ref.match(/^(.*)\s(\d+):(\d+)$/);
