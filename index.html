@@ -529,6 +529,7 @@
     <input id="religion-search" type="text" class="sidebar-search" placeholder="Search traditions…" autocomplete="off">
     <div class="sidebar-list" id="chips">
       <button class="side-chip active" data-filter="all">All</button>
+      <button class="side-chip" data-filter="Catholicism">Catholicism</button>
       <button class="side-chip" data-filter="Islam">Islam</button>
       <button class="side-chip" data-filter="Jehovah's Witnesses">Jehovah's Witnesses</button>
       <button class="side-chip" data-filter="Mormonism">Mormonism (LDS)</button>
@@ -690,7 +691,7 @@
   <p>When connected to the internet, the app checks for content updates from our content source. This check does not transmit any personal or identifying information.</p>
   <h3>Source Material</h3>
   <p>Original texts included in this app are drawn from public domain sources and open licenses. Where a source requires attribution, that attribution is provided within the relevant entry.</p>
-  <p>Bible text is the King James Version (public domain). The Qur'an translation is supplied by the fawazahmed0/quran-api project, released under the Unlicense (a public domain dedication). Hindu source texts are drawn from openly licensed public-domain translations. A full list of loaded texts and their licenses is shown under Settings → Source Texts.</p>
+  <p>Bible text is the King James Version (public domain). The Qur'an translation is supplied by the fawazahmed0/quran-api project, released under the Unlicense (a public domain dedication). Hindu source texts are drawn from openly licensed public-domain translations. The Catholic source text is the Baltimore Catechism (Rev. Thomas L. Kinkead's 1891/1921 "Explanation" edition), sourced from Project Gutenberg and in the public domain. A full list of loaded texts and their licenses is shown under Settings → Source Texts.</p>
   <p>Texts from other traditions are reproduced as published, without editing, so that each tradition's claims can be examined in its own words.</p>
   <h3>Changes to This Policy</h3>
   <p>If this policy changes, the update will be reflected here with a revised date. Continued use of the app after changes constitutes acceptance of the updated policy.</p>
@@ -924,6 +925,145 @@
       positionSummary: "Mainstream Masonic bodies officially describe Freemasonry as a fraternal, charitable organization built around shared moral teaching and symbolism, not a religion or a path to salvation — though it does require belief in a \"Supreme Being.\"",
       verses: [
         { ref: "James 1:22", text: "But be ye doers of the word, and not hearers only, deceiving your own selves." }
+      ]
+    },
+    {
+      claim: "Souls are purified in Purgatory after death before entering heaven",
+      religion: "Catholicism",
+      keywords: ["purgatory", "catholic purgatory doctrine", "temporal punishment after death", "purified after death"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 414", text: "Purgatory is the state in which those suffer for a time who die guilty of venial sins, or without having satisfied for the punishment due to their sins." },
+      verses: [
+        { ref: "Hebrews 9:27", text: "And as it is appointed unto men once to die, but after this the judgment:" },
+        { ref: "Luke 23:43", text: "And Jesus said unto him, Verily I say unto thee, To day shalt thou be with me in paradise." },
+        { ref: "2 Corinthians 5:8", text: "We are confident, I say, and willing rather to be absent from the body, and to be present with the Lord." }
+      ]
+    },
+    {
+      claim: "Mary was conceived without original sin (the Immaculate Conception)",
+      religion: "Catholicism",
+      keywords: ["immaculate conception", "mary sinless", "mary without original sin", "mary full of grace"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 50", text: "The Blessed Virgin Mary, through the merits of her divine Son, was preserved free from the guilt of Original Sin, and this privilege is called her Immaculate Conception." },
+      note: "Defined as dogma by Pope Pius IX in the bull Ineffabilis Deus (1854).",
+      verses: [
+        { ref: "Romans 3:23", text: "For all have sinned, and come short of the glory of God." },
+        { ref: "Romans 5:12", text: "Wherefore, as by one man sin entered into the world, and death by sin; and so death passed upon all men, for that all have sinned:" },
+        { ref: "Luke 1:47", text: "And my spirit hath rejoiced in God my Saviour." }
+      ]
+    },
+    {
+      claim: "There is no salvation for anyone who knowingly remains outside the Catholic Church",
+      religion: "Catholicism",
+      keywords: ["no salvation outside the church", "extra ecclesiam nulla salus", "catholic church necessary for salvation"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 121", text: "All are bound to belong to the Church, and he who knows the Church to be the true Church and remains out of it, cannot be saved." },
+      verses: [
+        { ref: "Acts 4:12", text: "Neither is there salvation in any other: for there is none other name under heaven given among men, whereby we must be saved." },
+        { ref: "Romans 10:9", text: "That if thou shalt confess with thy mouth the Lord Jesus, and shalt believe in thine heart that God hath raised him from the dead, thou shalt be saved." },
+        { ref: "Ephesians 2:8-9", text: "For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast." }
+      ]
+    },
+    {
+      claim: "The Pope, as successor of Peter, can teach infallibly on faith and morals",
+      religion: "Catholicism",
+      keywords: ["papal infallibility", "pope supreme authority", "petrine primacy", "vicar of christ"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 125", text: "The Church teaches infallibly when it speaks through the Pope and bishops united in general council, or through the Pope alone when he proclaims to all the faithful a doctrine of faith or morals." },
+      note: "Papal infallibility exercised apart from a council was formally defined by the First Vatican Council in Pastor Aeternus (1870).",
+      verses: [
+        { ref: "Galatians 2:11", text: "But when Peter was come to Antioch, I withstood him to the face, because he was to be blamed." },
+        { ref: "Acts 15:6-7", text: "And the apostles and elders came together for to consider of this matter. And when there had been much disputing, Peter rose up, and said unto them, Men and brethren, ye know how that a good while ago God made choice among us..." },
+        { ref: "1 Peter 5:1", text: "The elders which are among you I exhort, who am also an elder, and a witness of the sufferings of Christ, and also a partaker of the glory that shall be revealed:" }
+      ]
+    },
+    {
+      claim: "Baptism is necessary for salvation",
+      religion: "Catholicism",
+      keywords: ["baptism necessary for salvation", "baptismal regeneration catholic", "baptism washes away sin"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 154", text: "Baptism is necessary to salvation, because without it we cannot enter into the kingdom of Heaven." },
+      verses: [
+        { ref: "Luke 23:43", text: "And Jesus said unto him, Verily I say unto thee, To day shalt thou be with me in paradise." },
+        { ref: "Romans 10:9", text: "That if thou shalt confess with thy mouth the Lord Jesus, and shalt believe in thine heart that God hath raised him from the dead, thou shalt be saved." },
+        { ref: "Ephesians 2:8-9", text: "For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast." }
+      ]
+    },
+    {
+      claim: "The bread and wine of the Eucharist become the actual body and blood of Christ",
+      religion: "Catholicism",
+      keywords: ["transubstantiation", "real presence eucharist", "catholic communion body of christ", "eucharist literal body and blood"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 244, 246", text: "After the substance of the bread and wine had been changed into the substance of the body and blood of Our Lord there remained only the appearances of bread and wine. This change of the bread and wine into the body and blood of Our Lord is called Transubstantiation." },
+      verses: [
+        { ref: "Luke 22:19", text: "And he took bread, and gave thanks, and brake it, and gave unto them, saying, This is my body which is given for you: this do in remembrance of me." },
+        { ref: "John 6:63", text: "It is the spirit that quickeneth; the flesh profiteth nothing: the words that I speak unto you, they are spirit, and they are life." }
+      ]
+    },
+    {
+      claim: "Mortal sins must be confessed to a priest to be absolved",
+      religion: "Catholicism",
+      keywords: ["confession to a priest", "catholic confession sin", "sacrament of penance", "auricular confession"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 209", text: "We are bound to confess all our mortal sins, but it is well also to confess our venial sins." },
+      verses: [
+        { ref: "1 Timothy 2:5", text: "For there is one God, and one mediator between God and men, the man Christ Jesus;" },
+        { ref: "1 John 1:9", text: "If we confess our sins, he is faithful and just to forgive us our sins, and to cleanse us from all unrighteousness." }
+      ]
+    },
+    {
+      claim: "The saints can be invoked in prayer to ask for their help and intercession",
+      religion: "Catholicism",
+      keywords: ["intercession of saints", "praying to saints", "mary mediatrix", "invocation of saints catholic"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 332, 333", text: "The First Commandment does not forbid us to pray to the saints. By praying to the saints we mean the asking of their help and prayers." },
+      verses: [
+        { ref: "1 Timothy 2:5", text: "For there is one God, and one mediator between God and men, the man Christ Jesus;" },
+        { ref: "Hebrews 4:16", text: "Let us therefore come boldly unto the throne of grace, that we may obtain mercy, and find grace to help in time of need." }
+      ]
+    },
+    {
+      claim: "Grace is necessary to merit Heaven — good works done in grace merit salvation",
+      religion: "Catholicism",
+      keywords: ["merit catholic salvation", "faith and works catholic", "cooperate with grace", "earn salvation catholic"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 111", text: "Grace is necessary for salvation, because without grace we can do nothing to merit Heaven." },
+      verses: [
+        { ref: "Ephesians 2:8-9", text: "For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast." },
+        { ref: "Titus 3:5", text: "Not by works of righteousness which we have done, but according to his mercy he saved us, by the washing of regeneration, and renewing of the Holy Ghost;" }
+      ]
+    },
+    {
+      claim: "The Church can grant indulgences that remit the temporal punishment due for sin",
+      religion: "Catholicism",
+      keywords: ["indulgences catholic", "remission of temporal punishment", "catholic indulgence doctrine"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 231", text: "An indulgence is the remission in whole or in part of the temporal punishment due to sin." },
+      verses: [
+        { ref: "Ephesians 1:7", text: "In whom we have redemption through his blood, the forgiveness of sins, according to the riches of his grace;" },
+        { ref: "Colossians 2:13-14", text: "Having forgiven you all trespasses; Blotting out the handwriting of ordinances that was against us, which was contrary to us, and took it out of the way, nailing it to his cross;" }
+      ]
+    },
+    /*
+     * These two quote the Second Vatican Council directly (Lumen Gentium,
+     * 1964; Nostra Aetate, 1965), not the Baltimore Catechism above. Unlike
+     * that text, no confirmed-public-domain English translation of either
+     * document exists — every edition in circulation is claimed under
+     * copyright by some party (Libreria Editrice Vaticana, or Sheed & Ward /
+     * Trustees for Roman Catholic Purposes for the Flannery edition). So
+     * these are kept to a single short, attributed excerpt each rather than
+     * a bulk corpus like the other sources in this file.
+     */
+    {
+      claim: "Those who through no fault of their own never come to know Christ or the Church can still attain salvation",
+      religion: "Catholicism",
+      keywords: ["invincible ignorance salvation", "lumen gentium salvation", "saved without knowing christ catholic", "sincere seekers of god saved"],
+      sourceQuote: { ref: "Lumen Gentium §16 (Second Vatican Council, 1964)", text: "Those also can attain to everlasting salvation who through no fault of their own do not know the Gospel of Christ or His Church, yet sincerely seek God and, moved by grace, try in their actions to do His will as they know it through the dictates of their conscience." }, // VERIFY WORDING — translation edition
+      verses: [
+        { ref: "Romans 10:14", text: "How then shall they call on him in whom they have not believed? and how shall they believe in him of whom they have not heard? and how shall they hear without a preacher?" },
+        { ref: "Acts 4:12", text: "Neither is there salvation in any other: for there is none other name under heaven given among men, whereby we must be saved." },
+        { ref: "John 14:6", text: "Jesus saith unto him, I am the way, the truth, and the life: no man cometh unto the Father, but by me." }
+      ]
+    },
+    {
+      claim: "Non-Christian religions can reflect a genuine ray of the truth that enlightens all people",
+      religion: "Catholicism",
+      keywords: ["nostra aetate other religions", "rays of truth other religions catholic", "catholic view of world religions", "vatican ii non-christian religions"],
+      sourceQuote: { ref: "Nostra Aetate §2 (Second Vatican Council, 1965)", text: "The Catholic Church rejects nothing that is true and holy in these religions... these often reflect a ray of that Truth which enlightens all men." }, // VERIFY WORDING — translation edition
+      verses: [
+        { ref: "John 14:6", text: "Jesus saith unto him, I am the way, the truth, and the life: no man cometh unto the Father, but by me." },
+        { ref: "Acts 4:12", text: "Neither is there salvation in any other: for there is none other name under heaven given among men, whereby we must be saved." },
+        { ref: "2 Corinthians 6:14", text: "Be ye not unequally yoked together with unbelievers: for what fellowship hath righteousness with unrighteousness? and what communion hath light with darkness?" }
       ]
     }
   ];
@@ -1678,6 +1818,31 @@
           ? `Sunan Ibn Majah ${ref.book}:${ref.hadith}`
           : `Sunan Ibn Majah #${row.hadithnumber}`;
       })
+    },
+    /*
+     * Vendored locally (same reason as fuse.min.js — no dependency on a
+     * third party staying up) rather than fetched cross-origin.
+     * baltimore-catechism.json is a cleaned Q/A extraction of "An
+     * Explanation of the Baltimore Catechism of Christian Doctrine" (Rev.
+     * Thomas L. Kinkead, "Baltimore Catechism No. 4", imprimatur 1891/1921)
+     * from Project Gutenberg ebook #14554 — confirmed public domain, unlike
+     * the modern Catechism of the Catholic Church (1992), which remains
+     * under copyright. It predates a few dogmas defined after 1921 (e.g.
+     * the Assumption, 1950), so it's an older but still authoritative and
+     * doctrinally representative Catholic catechism, not the current one.
+     */
+    {
+      id: 'baltimore-catechism',
+      label: 'Baltimore Catechism',
+      tradition: 'Catholicism',
+      license: 'Public domain — Project Gutenberg ebook #14554',
+      urls: ['./baltimore-catechism.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({
+            ref: `Baltimore Catechism, Q. ${row.n}`,
+            text: stripHtml(`Q. ${row.q} A. ${row.a}`)
+          }))
+        : []
     }
   ];
 
@@ -2233,12 +2398,13 @@
     { key: 'hadith-nasai', label: "Sunan an-Nasa'i", tradition: 'Islam' },
     { key: 'hadith-ibnmajah', label: 'Sunan Ibn Majah', tradition: 'Islam' },
     { key: 'gita', label: 'Bhagavad Gita', tradition: 'Hinduism' },
-    { key: 'dhammapada', label: 'Dhammapada', tradition: 'Buddhism' }
+    { key: 'dhammapada', label: 'Dhammapada', tradition: 'Buddhism' },
+    { key: 'baltimore-catechism', label: 'Baltimore Catechism', tradition: 'Catholicism' }
   ];
 
   // Display order for the religion picker — READ_SOURCES insertion order
   // already follows this, but keep it explicit in case entries get reordered.
-  const READ_RELIGION_ORDER = ['Christianity', 'Islam', 'Hinduism', 'Buddhism'];
+  const READ_RELIGION_ORDER = ['Christianity', 'Catholicism', 'Islam', 'Hinduism', 'Buddhism'];
 
   // Canonical KJV reading order — BIBLE_BOOKS (declared earlier, for CDN
   // fetch filenames) is alphabetical, which would list books completely out
@@ -2293,6 +2459,13 @@
       const n = parseInt(m[1], 10);
       const start = Math.floor((n - 1) / 50) * 50 + 1;
       return { group: `Verses ${start}–${start + 49}`, chapter: start, verse: n };
+    }
+    if (sourceKey === 'baltimore-catechism') {
+      const m = ref.match(/Q\.\s*(\d+)/);
+      if (!m) return null;
+      const n = parseInt(m[1], 10);
+      const start = Math.floor((n - 1) / 50) * 50 + 1;
+      return { group: `Q. ${start}–${start + 49}`, chapter: start, verse: n };
     }
     if (sourceKey.startsWith('hadith-')) {
       // Ref format is "<Collection name> <book>:<hadith>", e.g. "Sahih al-Bukhari 12:34".
