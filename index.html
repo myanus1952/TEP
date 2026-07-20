@@ -530,6 +530,7 @@
     <div class="sidebar-list" id="chips">
       <button class="side-chip active" data-filter="all">All</button>
       <button class="side-chip" data-filter="Catholicism">Catholicism</button>
+      <button class="side-chip" data-filter="Apocrypha">Apocrypha</button>
       <button class="side-chip" data-filter="Islam">Islam</button>
       <button class="side-chip" data-filter="Jehovah's Witnesses">Jehovah's Witnesses</button>
       <button class="side-chip" data-filter="Mormonism">Mormonism (LDS)</button>
@@ -691,7 +692,7 @@
   <p>When connected to the internet, the app checks for content updates from our content source. This check does not transmit any personal or identifying information.</p>
   <h3>Source Material</h3>
   <p>Original texts included in this app are drawn from public domain sources and open licenses. Where a source requires attribution, that attribution is provided within the relevant entry.</p>
-  <p>Bible text is the King James Version (public domain). The Qur'an translation is supplied by the fawazahmed0/quran-api project, released under the Unlicense (a public domain dedication). Hindu source texts are drawn from openly licensed public-domain translations. The Catholic source text is the Baltimore Catechism (Rev. Thomas L. Kinkead's 1891/1921 "Explanation" edition), sourced from Project Gutenberg and in the public domain. A full list of loaded texts and their licenses is shown under Settings → Source Texts.</p>
+  <p>Bible text is the King James Version (public domain). The Qur'an translation is supplied by the fawazahmed0/quran-api project, released under the Unlicense (a public domain dedication). Hindu source texts are drawn from openly licensed public-domain translations. The Catholic source text is the Baltimore Catechism (Rev. Thomas L. Kinkead's 1891/1921 "Explanation" edition, via Project Gutenberg), public domain. The seven deuterocanonical books (the Apocrypha) are drawn from the Douay-Rheims translation (Challoner revision), also public domain. A full list of loaded texts and their licenses is shown under Settings → Source Texts.</p>
   <p>Texts from other traditions are reproduced as published, without editing, so that each tradition's claims can be examined in its own words.</p>
   <h3>Changes to This Policy</h3>
   <p>If this policy changes, the update will be reflected here with a revised date. Continued use of the app after changes constitutes acceptance of the updated policy.</p>
@@ -1843,6 +1844,37 @@
             text: stripHtml(`Q. ${row.q} A. ${row.a}`)
           }))
         : []
+    },
+    /*
+     * The seven deuterocanonical Old Testament books, a.k.a. the Apocrypha —
+     * kept as their own tradition rather than folded into "Catholicism",
+     * since they're not a distinctively Catholic composition: the Orthodox
+     * churches also hold them as canonical, and they were printed in early
+     * Protestant Bibles (including the original 1611 KJV) as a separate
+     * section, before falling out of common Protestant use. Douay-Rheims
+     * (Challoner revision, mid-18th century) is the traditional English
+     * Catholic translation and is public domain (pre-1923).
+     *
+     * Vendored locally rather than fetched from a third-party GitHub JSON
+     * (xxruyle/Bible-DouayRheims) after that source turned out to have a
+     * real data bug: its "2 Machabees" is missing chapter 7 entirely (the
+     * martyrdom of the seven brothers), silently shifting every later verse
+     * back by one chapter under the wrong number. deuterocanon.json here was
+     * extracted directly from Project Gutenberg ebook #1581 instead — its
+     * chapter counts for all seven books were verified against the standard
+     * Douay-Rheims structure (no gaps), and Challoner's inline footnotes
+     * (appended to verse text as "...."-delimited asides in that edition)
+     * were stripped so only the actual verse text remains.
+     */
+    {
+      id: 'deuterocanon',
+      label: 'Apocrypha / Deuterocanon (Douay-Rheims)',
+      tradition: 'Apocrypha',
+      license: 'Public domain (pre-1923) — Douay-Rheims, Challoner revision, via Project Gutenberg ebook #1581',
+      urls: ['./deuterocanon.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
     }
   ];
 
@@ -2399,12 +2431,13 @@
     { key: 'hadith-ibnmajah', label: 'Sunan Ibn Majah', tradition: 'Islam' },
     { key: 'gita', label: 'Bhagavad Gita', tradition: 'Hinduism' },
     { key: 'dhammapada', label: 'Dhammapada', tradition: 'Buddhism' },
-    { key: 'baltimore-catechism', label: 'Baltimore Catechism', tradition: 'Catholicism' }
+    { key: 'baltimore-catechism', label: 'Baltimore Catechism', tradition: 'Catholicism' },
+    { key: 'deuterocanon', label: 'Apocrypha / Deuterocanon', tradition: 'Apocrypha' }
   ];
 
   // Display order for the religion picker — READ_SOURCES insertion order
   // already follows this, but keep it explicit in case entries get reordered.
-  const READ_RELIGION_ORDER = ['Christianity', 'Catholicism', 'Islam', 'Hinduism', 'Buddhism'];
+  const READ_RELIGION_ORDER = ['Christianity', 'Catholicism', 'Apocrypha', 'Islam', 'Hinduism', 'Buddhism'];
 
   // Canonical KJV reading order — BIBLE_BOOKS (declared earlier, for CDN
   // fetch filenames) is alphabetical, which would list books completely out
@@ -2459,6 +2492,25 @@
       const n = parseInt(m[1], 10);
       const start = Math.floor((n - 1) / 50) * 50 + 1;
       return { group: `Verses ${start}–${start + 49}`, chapter: start, verse: n };
+    }
+    if (sourceKey === 'deuterocanon') {
+      const m = ref.match(/^(.*)\s(\d+):(\d+)$/);
+      if (!m) return null;
+      // Grouped by whole book (not book+chapter, unlike Bible) since each
+      // book is its own "Read Full Text" group here. Two consequences:
+      //  - `chapter` becomes canonical book order, so groups sort correctly
+      //    instead of tying (every book's own chapter count restarts at 1).
+      //  - `verse` becomes a chapter*1000+verse composite, so verses within
+      //    a group still sort correctly — renderReadVerses() only sorts by
+      //    `verse`, which elsewhere is always scoped to a single chapter.
+      const DEUTERO_ORDER = ['Tobias', 'Judith', 'Wisdom', 'Ecclesiasticus', 'Baruch', '1 Machabees', '2 Machabees'];
+      const bookIdx = DEUTERO_ORDER.indexOf(m[1]);
+      return {
+        group: m[1],
+        book: m[1],
+        chapter: bookIdx === -1 ? 999 : bookIdx,
+        verse: parseInt(m[2], 10) * 1000 + parseInt(m[3], 10)
+      };
     }
     if (sourceKey === 'baltimore-catechism') {
       const m = ref.match(/Q\.\s*(\d+)/);
