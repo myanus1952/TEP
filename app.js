@@ -1481,12 +1481,12 @@
 
   async function saveVersesToDB(verses) {
     const db = await openBibleDB();
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const tx = db.transaction(STORE, 'readwrite');
       const store = tx.objectStore(STORE);
       verses.forEach(v => store.put(v));
       tx.oncomplete = () => resolve();
-      tx.onerror = () => resolve();
+      tx.onerror = () => reject(tx.error);
     });
   }
 
@@ -1518,24 +1518,36 @@
 
   async function downloadFullBible() {
     setBibleStatus('downloading', 'Downloading full Bible for offline use…');
-    try {
-      const results = await Promise.all(
-        BIBLE_BOOKS.map(b =>
-          fetch(`https://cdn.jsdelivr.net/gh/aruljohn/Bible-kjv@a9aa4e55afbb3e095f57e4b14cd1f22c5ee8d7c9/${b}.json`).then(r => r.json())
-        )
-      );
-      const flatVerses = [];
-      results.forEach(book => {
+    const flatVerses = [];
+    let failedBooks = 0;
+    await Promise.all(BIBLE_BOOKS.map(async (b) => {
+      try {
+        const res = await fetch(`https://cdn.jsdelivr.net/gh/aruljohn/Bible-kjv@a9aa4e55afbb3e095f57e4b14cd1f22c5ee8d7c9/${b}.json`);
+        if (!res.ok) throw new Error(`HTTP ${res.status}`);
+        const book = await res.json();
         (book.chapters || []).forEach(ch => {
           (ch.verses || []).forEach(v => {
             flatVerses.push({ ref: `${book.book} ${ch.chapter}:${v.verse}`, text: v.text });
           });
         });
-      });
-      await saveVersesToDB(flatVerses);
-      buildBibleIndex(flatVerses);
-    } catch (err) {
+      } catch (err) {
+        failedBooks++;
+      }
+    }));
+
+    if (flatVerses.length === 0) {
       setBibleStatus('offline-empty', 'Could not download Scripture data — check connection and reload.');
+      return;
+    }
+
+    try {
+      await saveVersesToDB(flatVerses);
+    } catch (err) {
+      console.warn('TEP: failed to persist Bible verses to IndexedDB:', err);
+    }
+    buildBibleIndex(flatVerses);
+    if (failedBooks > 0) {
+      setBibleStatus('ready', `Full Bible loaded — ${flatVerses.length.toLocaleString()} verses searchable (${failedBooks} book${failedBooks === 1 ? '' : 's'} failed to download — try Recheck Sources later)`);
     }
   }
 
@@ -1605,7 +1617,7 @@
 
   async function saveSourceRows(sourceId, rows) {
     const db = await openSourceDB();
-    return new Promise((resolve) => {
+    return new Promise((resolve, reject) => {
       const tx = db.transaction(SRC_STORE, 'readwrite');
       const store = tx.objectStore(SRC_STORE);
       rows.forEach(r => store.put({
@@ -1615,7 +1627,7 @@
         text: r.text
       }));
       tx.oncomplete = () => resolve();
-      tx.onerror = () => resolve();
+      tx.onerror = () => reject(tx.error);
     });
   }
 
@@ -1821,14 +1833,12 @@
   }
 
   async function recheckSources() {
-    SOURCE_TEXTS.forEach(s => { sourceStatus[s.id] = 'loading'; });
-    renderSourceStatusPanel();
     if (!navigator.onLine) {
-      SOURCE_TEXTS.forEach(s => { sourceStatus[s.id] = 'missing'; });
-      renderSourceStatusPanel();
       showToast('You appear to be offline');
       return;
     }
+    SOURCE_TEXTS.forEach(s => { sourceStatus[s.id] = 'loading'; });
+    renderSourceStatusPanel();
     await downloadSourceTexts();
     const okCount = SOURCE_TEXTS.filter(s => sourceStatus[s.id] === 'ready').length;
     showToast(`${okCount} of ${SOURCE_TEXTS.length} sources loaded`);
@@ -2390,7 +2400,11 @@
       store.add({ id, religion: entry.religion, claim: entry.claim, savedAt: Date.now() });
       bookmarkIds.add(id);
     }
-    tx.oncomplete = () => render();
+    tx.oncomplete = () => {
+      render();
+      const bookmarksPage = document.getElementById('page-bookmarks');
+      if (bookmarksPage && bookmarksPage.style.display !== 'none') renderBookmarksPage();
+    };
   }
 
   async function logSearchHit(id) {
