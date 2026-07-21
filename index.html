@@ -692,7 +692,7 @@
   <p>When connected to the internet, the app checks for content updates from our content source. This check does not transmit any personal or identifying information.</p>
   <h3>Source Material</h3>
   <p>Original texts included in this app are drawn from public domain sources and open licenses. Where a source requires attribution, that attribution is provided within the relevant entry.</p>
-  <p>Bible text is the King James Version (public domain). The Qur'an translation is supplied by the fawazahmed0/quran-api project, released under the Unlicense (a public domain dedication). Hindu source texts are drawn from openly licensed public-domain translations. Catholic source texts are the Baltimore Catechism (Rev. Thomas L. Kinkead's 1891/1921 "Explanation" edition, via Project Gutenberg), the dogmatic canons of the Council of Trent (J. Waterworth's 1848 translation), and two pre-1929 papal encyclicals (Rerum Novarum, 1891; Ineffabilis Deus, 1854) — all public domain. The seven deuterocanonical books (the Apocrypha) are drawn from the Douay-Rheims translation (Challoner revision), also public domain. A full list of loaded texts and their licenses is shown under Settings → Source Texts.</p>
+  <p>Bible text is the King James Version (public domain). The Qur'an translation is supplied by the fawazahmed0/quran-api project, released under the Unlicense (a public domain dedication). Hindu source texts are drawn from openly licensed public-domain translations. Catholic source texts are the Baltimore Catechism (Rev. Thomas L. Kinkead's 1891/1921 "Explanation" edition, via Project Gutenberg), the dogmatic canons of the Council of Trent (J. Waterworth's 1848 translation), two pre-1929 papal encyclicals (Rerum Novarum, 1891; Ineffabilis Deus, 1854), and the Summa Theologica (Fathers of the English Dominican Province translation, 1920) — all public domain. The seven deuterocanonical books (the Apocrypha) are drawn from the Douay-Rheims translation (Challoner revision), also public domain. A full list of loaded texts and their licenses is shown under Settings → Source Texts.</p>
   <p>Texts from other traditions are reproduced as published, without editing, so that each tradition's claims can be examined in its own words.</p>
   <h3>Changes to This Policy</h3>
   <p>If this policy changes, the update will be reflected here with a revised date. Continued use of the app after changes constitutes acceptance of the updated policy.</p>
@@ -2049,6 +2049,40 @@
       parse: (data) => Array.isArray(data)
         ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
         : []
+    },
+    /*
+     * The Summa Theologica (St. Thomas Aquinas, 13th c.) — the single most
+     * influential work of Catholic systematic theology, and public domain
+     * (Fathers of the English Dominican Province translation, 1920, via
+     * Project Gutenberg ebooks #17611/17897/18755/19950 for Parts I, I-II,
+     * II-II, and III respectively). 2,637 articles total.
+     *
+     * Each article's Objections and Replies are structured disputation, not
+     * Aquinas's own position — omitted for the same reason Trent's decrees
+     * were skipped (see above), keeping only the "I answer that..." section,
+     * which is the article's actual teaching and is what gets cited in
+     * practice.
+     *
+     * The source text itself has a handful of numbering slips (an article
+     * bracket-tagged with the same number as its neighbor, or labeled with
+     * the wrong Part letter) — verified by cross-checking against the
+     * spelled-out ordinal ("FIRST ARTICLE", "SECOND ARTICLE", etc.), which
+     * never skips or repeats. Article numbers here are assigned by document
+     * order within each Question rather than trusting either the bracket or
+     * the ordinal word alone, since a few even had the ordinal word itself
+     * duplicated. A handful of articles (5 out of 2,642 in Part I alone)
+     * lack an extractable "I answer that" in this particular transcription
+     * and are simply absent rather than guessed at.
+     */
+    {
+      id: 'summa-theologica',
+      label: 'Summa Theologica (Aquinas)',
+      tradition: 'Catholicism',
+      license: 'Public domain — Fathers of the English Dominican Province translation (1920), via Project Gutenberg',
+      urls: ['./summa-theologica.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
     }
   ];
 
@@ -2609,7 +2643,8 @@
     { key: 'deuterocanon', label: 'Apocrypha / Deuterocanon', tradition: 'Apocrypha' },
     { key: 'trent-canons', label: 'Council of Trent — Canons', tradition: 'Catholicism' },
     { key: 'rerum-novarum', label: 'Rerum Novarum (1891)', tradition: 'Catholicism' },
-    { key: 'ineffabilis-deus', label: 'Ineffabilis Deus (1854)', tradition: 'Catholicism' }
+    { key: 'ineffabilis-deus', label: 'Ineffabilis Deus (1854)', tradition: 'Catholicism' },
+    { key: 'summa-theologica', label: 'Summa Theologica', tradition: 'Catholicism' }
   ];
 
   // Display order for the religion picker — READ_SOURCES insertion order
@@ -2676,6 +2711,17 @@
       const n = parseInt(m[1], 10);
       const start = Math.floor((n - 1) / 10) * 10 + 1;
       return { group: `¶${start}–${start + 9}`, chapter: start, verse: n };
+    }
+    if (sourceKey === 'summa-theologica') {
+      const m = ref.match(/^Summa Theologica, ([IVX-]+), Q\.\s*(\d+), Art\.\s*(\d+)$/);
+      if (!m) return null;
+      const SUMMA_PART_ORDER = ['I', 'I-II', 'II-II', 'III'];
+      const partIdx = SUMMA_PART_ORDER.indexOf(m[1]);
+      return {
+        group: `Part ${m[1]}`,
+        chapter: partIdx === -1 ? 999 : partIdx,
+        verse: parseInt(m[2], 10) * 10000 + parseInt(m[3], 10)
+      };
     }
     if (sourceKey === 'trent-canons') {
       const m = ref.match(/^Council of Trent, (.+), Canon ([IVXLCDM]+)$/);
