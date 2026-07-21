@@ -1080,6 +1080,50 @@
       ]
     },
     /*
+     * These three fill gaps spotted by cross-checking against lotwi.org's
+     * "Catholicism" objections page (Light of the World Initiative) — used
+     * only to find topics not yet covered here, not as a text source: its
+     * own written responses are that ministry's original copyrighted
+     * commentary, not reused below. Each entry here is independently
+     * sourced against this app's own verified Baltimore Catechism data,
+     * or (where no pre-1929 public-domain primary source exists for a
+     * dogma) written as a plain positionSummary instead of inventing a
+     * quote.
+     */
+    {
+      claim: "The Pope is Peter's successor and, as visible head of the Church, holds supreme authority over it",
+      religion: "Catholicism",
+      keywords: ["pope successor of peter", "petrine succession", "vicar of christ visible head", "papal supreme authority"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 117, 118", text: "Our Holy Father the Pope, the Bishop of Rome, is the vicar of Christ on earth and the visible head of the Church... because he is the successor of St. Peter, whom Christ made the chief of the Apostles and the visible head of the Church." },
+      note: "Distinct from papal infallibility (a specific teaching mechanism) — this is the broader claim of Peter's succession and headship itself.",
+      verses: [
+        { ref: "Colossians 1:18", text: "And he is the head of the body, the church: who is the beginning, the firstborn from the dead; that in all things he might have the preeminence." },
+        { ref: "Matthew 23:9", text: "And call no man your father upon the earth: for one is your Father, which is in heaven." },
+        { ref: "Ephesians 1:22", text: "And hath put all things under his feet, and gave him to be the head over all things to the church," }
+      ]
+    },
+    {
+      claim: "Mary was bodily assumed into heaven at the end of her earthly life",
+      religion: "Catholicism",
+      keywords: ["assumption of mary", "mary taken up to heaven", "bodily assumption catholic"],
+      positionSummary: "Defined as dogma by Pope Pius XII in Munificentissimus Deus (1950): that Mary, having completed her earthly life, was assumed body and soul into heavenly glory. No pre-1929 public-domain primary source exists for this one — it was formally defined after that cutoff — so it's stated here rather than quoted.",
+      verses: [
+        { ref: "John 3:13", text: "And no man hath ascended up to heaven, but he that came down from heaven, even the Son of man which is in heaven." },
+        { ref: "Acts 13:36", text: "For David, after he had served his own generation by the will of God, fell on sleep, and was laid unto his fathers, and saw corruption:" }
+      ]
+    },
+    {
+      claim: "Priests must remain celibate and unmarried to serve God more fully",
+      religion: "Catholicism",
+      keywords: ["priestly celibacy", "catholic priests cannot marry", "clerical celibacy discipline"],
+      positionSummary: "Latin Rite discipline (not dogma) requires priests to remain unmarried, understood as freeing them for undivided devotion to ministry.",
+      verses: [
+        { ref: "1 Timothy 4:1-3", text: "Now the Spirit speaketh expressly, that in the latter times some shall depart from the faith, giving heed to seducing spirits, and doctrines of devils; Speaking lies in hypocrisy; having their conscience seared with a hot iron; Forbidding to marry, and commanding to abstain from meats, which God hath created to be received with thanksgiving of them which believe and know the truth." },
+        { ref: "1 Corinthians 9:5", text: "Have we not power to lead about a sister, a wife, as well as other apostles, and as the brethren of the Lord, and Cephas?" },
+        { ref: "1 Timothy 3:2", text: "A bishop then must be blameless, the husband of one wife, vigilant, sober, of good behaviour, given to hospitality, apt to teach;" }
+      ]
+    },
+    /*
      * These three are tagged "Apocrypha", not "Catholicism" — they're
      * specific claims found within the deuterocanonical books themselves
      * (see the searchable Apocrypha/Deuterocanon source text above), which
@@ -1121,6 +1165,16 @@
         { ref: "Ephesians 2:1", text: "And you hath he quickened, who were dead in trespasses and sins;" },
         { ref: "John 15:16", text: "Ye have not chosen me, but I have chosen you, and ordained you, that ye should go and bring forth fruit, and that your fruit should remain: that whatsoever ye shall ask of the Father in my name, he may give it you." },
         { ref: "Romans 9:16", text: "So then it is not of him that willeth, nor of him that runneth, but of God that sheweth mercy." }
+      ]
+    },
+    {
+      claim: "The deuterocanonical books belong in the Bible as inspired Scripture",
+      religion: "Apocrypha",
+      keywords: ["apocrypha canonicity", "deuterocanon inspired scripture", "apocrypha belongs in the bible", "canon of scripture apocrypha"],
+      positionSummary: "The Council of Trent (1546) formally defined these books as canonical Scripture, against the Reformers, who excluded them, following the Jewish canon — the Hebrew Bible never included them, and the New Testament, while it quotes the Old Testament heavily, never quotes any of these books as Scripture.",
+      verses: [
+        { ref: "Luke 24:44", text: "And he said unto them, These are the words which I spake unto you, while I was yet with you, that all things must be fulfilled, which were written in the law of Moses, and in the prophets, and in the psalms, concerning me." },
+        { ref: "Romans 3:2", text: "Much every way: chiefly, because that unto them were committed the oracles of God." }
       ]
     }
   ];
