@@ -1,15 +1,17 @@
-const CACHE_NAME = 'tep-shell-v4';
+const CACHE_NAME = 'tep-shell-v5';
 const SHELL_FILES = [
-  './',
   './index.html',
   './manifest.json',
   './search-worker.js',
-  './fuse.min.js'
+  './fuse.min.js',
+  './app.js'
 ];
 
 self.addEventListener('install', (event) => {
   event.waitUntil(
-    caches.open(CACHE_NAME).then((cache) => cache.addAll(SHELL_FILES))
+    caches.open(CACHE_NAME).then((cache) =>
+      Promise.all(SHELL_FILES.map((file) => cache.add(file).catch(() => {})))
+    )
   );
   self.skipWaiting();
 });
@@ -25,6 +27,7 @@ self.addEventListener('activate', (event) => {
 
 self.addEventListener('fetch', (event) => {
   if (event.request.method !== 'GET') return;
+  if (new URL(event.request.url).origin !== self.location.origin) return;
 
   event.respondWith(
     caches.match(event.request).then((cached) => {
