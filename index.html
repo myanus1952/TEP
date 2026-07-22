@@ -155,9 +155,24 @@
     border:1.5px solid var(--line);border-radius:6px;
     padding:12px 14px;margin-bottom:10px;background:var(--paper);
   }
+  .source-status-head{
+    display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;
+  }
+  .source-action-btn{
+    width:auto;display:inline-block;margin:0;padding:7px 14px;font-size:11.5px;flex-shrink:0;
+  }
   .source-license{
     font-size:12px;color:var(--ink-soft);margin-top:6px;
   }
+  .source-file-details{margin-top:10px;font-size:12.5px;color:var(--ink-soft);}
+  .source-file-details summary{
+    cursor:pointer;font-family:'JetBrains Mono',monospace;font-size:11px;color:var(--ink-soft);
+  }
+  .source-file-row{
+    display:flex;justify-content:space-between;gap:10px;
+    padding:6px 0;border-top:1px dashed var(--line);
+  }
+  .source-file-row:first-of-type{border-top:none;margin-top:8px;}
   .source-diag{
     margin-top:10px;padding-top:10px;border-top:1px dashed var(--line);
   }
@@ -670,7 +685,7 @@
 <div id="page-sources" class="subpage" style="display:none;">
   <button class="back-link" data-page="home">← Back</button>
   <h2>Source Texts</h2>
-  <p>Each tradition's own text, downloaded once and searchable offline. If a source can't be reached, TEP keeps working without it.</p>
+  <p>Each tradition's own text, downloaded once and searchable offline. The core traditions download automatically; anything else is optional. Remove a tradition to free up space on your device — it stays listed here and can be downloaded again anytime. If a source can't be reached, TEP keeps working without it.</p>
   <div id="source-status-list"></div>
   <div class="diag-actions">
     <button class="submit-btn" id="recheck-sources">Re-check sources</button>

@@ -2314,7 +2314,37 @@
   const SRC_DB_NAME = 'tep-source-texts';
   const SRC_STORE = 'texts';
   const SRC_META_STORE = 'meta';
-  const sourceStatus = {}; // id -> 'ready' | 'failed' | 'loading'
+  const sourceStatus = {}; // id -> 'ready' | 'failed' | 'loading' | 'missing'
+  const sourceByteSize = {}; // id -> approx bytes currently stored in IndexedDB
+
+  // Traditions whose texts download automatically on first load. Anything
+  // else (future additions — new traditions, alternate-language editions)
+  // is opt-in only, downloaded from Settings -> Source Texts.
+  const AUTO_DOWNLOAD_TRADITIONS = new Set(['Islam', 'Hinduism', 'Buddhism', 'Catholicism', 'Apocrypha']);
+
+  // User overrides of the default install state, keyed by tradition name:
+  // true = keep installed, false = removed from device. Absence means "use
+  // the AUTO_DOWNLOAD_TRADITIONS default." Persisted so an uninstall (or an
+  // opt-in install) survives a reload instead of silently reverting.
+  let traditionOverrides = {};
+
+  function isTraditionWanted(tradition) {
+    if (Object.prototype.hasOwnProperty.call(traditionOverrides, tradition)) {
+      return traditionOverrides[tradition];
+    }
+    return AUTO_DOWNLOAD_TRADITIONS.has(tradition);
+  }
+
+  async function setTraditionOverride(tradition, wanted) {
+    traditionOverrides[tradition] = wanted;
+    await setSetting('tradition-overrides', traditionOverrides);
+  }
+
+  function formatBytes(bytes) {
+    if (bytes < 1024) return `${bytes} B`;
+    if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(0)} KB`;
+    return `${(bytes / 1024 / 1024).toFixed(1)} MB`;
+  }
 
   // Bump this whenever a source's fetch/parse logic changes in a way that
   // could make previously-cached rows wrong or stale (e.g. the Dhammapada
@@ -2397,9 +2427,34 @@
     });
   }
 
+  async function deleteSourceRowsForIds(sourceIds) {
+    const db = await openSourceDB();
+    return new Promise((resolve, reject) => {
+      const tx = db.transaction(SRC_STORE, 'readwrite');
+      const store = tx.objectStore(SRC_STORE);
+      const index = store.index('sourceId');
+      sourceIds.forEach(id => {
+        const cursorReq = index.openKeyCursor(IDBKeyRange.only(id));
+        cursorReq.onsuccess = (e) => {
+          const cursor = e.target.result;
+          if (cursor) {
+            store.delete(cursor.primaryKey);
+            cursor.continue();
+          }
+        };
+      });
+      tx.oncomplete = () => resolve();
+      tx.onerror = () => reject(tx.error);
+    });
+  }
+
   function buildSourceIndex(rows) {
     allSourceRows = rows;
     sourceIndexReady = rows.length > 0;
+    Object.keys(sourceByteSize).forEach(k => delete sourceByteSize[k]);
+    rows.forEach(r => {
+      sourceByteSize[r.sourceId] = (sourceByteSize[r.sourceId] || 0) + (r.text ? r.text.length : 0) + (r.ref ? r.ref.length : 0);
+    });
     if (!rows.length) { renderReadSourcePicker(); return; }
     if (searchWorker) searchWorker.postMessage({ type: 'load', name: 'source', data: rows });
     if (searchInput.value.trim()) render();
@@ -2488,8 +2543,9 @@
     throw lastErr || new Error('all URLs failed');
   }
 
-  async function downloadSourceTexts() {
-    const results = await Promise.all(SOURCE_TEXTS.map(async (source) => {
+  async function downloadSourceTexts(targets) {
+    const list = targets || SOURCE_TEXTS;
+    const results = await Promise.all(list.map(async (source) => {
       sourceStatus[source.id] = 'loading';
       try {
         const rows = await fetchSource(source);
@@ -2517,52 +2573,119 @@
       await setSourceSchemaVersion(SOURCE_SCHEMA_VERSION);
     }
 
+    traditionOverrides = (await getSetting('tradition-overrides')) || {};
+
     const cached = await loadAllSourceRows();
     if (cached.length > 0) {
       const present = new Set(cached.map(r => r.sourceId));
       SOURCE_TEXTS.forEach(s => { sourceStatus[s.id] = present.has(s.id) ? 'ready' : 'missing'; });
       buildSourceIndex(cached);
-      renderSourceStatusPanel();
-      // Fill in any source we don't yet have, if we're online.
-      if (navigator.onLine && SOURCE_TEXTS.some(s => !present.has(s.id))) {
-        downloadSourceTexts();
-      }
-    } else if (navigator.onLine) {
-      await downloadSourceTexts();
     } else {
       SOURCE_TEXTS.forEach(s => { sourceStatus[s.id] = 'missing'; });
-      renderSourceStatusPanel();
     }
+    renderSourceStatusPanel();
+
+    if (navigator.onLine) {
+      const toFetch = SOURCE_TEXTS.filter(s => sourceStatus[s.id] !== 'ready' && isTraditionWanted(s.tradition));
+      if (toFetch.length) downloadSourceTexts(toFetch);
+    }
+  }
+
+  async function installTradition(tradition) {
+    if (!navigator.onLine) { showToast('You appear to be offline'); return; }
+    await setTraditionOverride(tradition, true);
+    const targets = SOURCE_TEXTS.filter(s => s.tradition === tradition);
+    targets.forEach(s => { sourceStatus[s.id] = 'loading'; });
+    renderSourceStatusPanel();
+    await downloadSourceTexts(targets);
+    const okCount = targets.filter(s => sourceStatus[s.id] === 'ready').length;
+    showToast(okCount === targets.length
+      ? `${tradition} downloaded — searchable offline`
+      : `${tradition}: ${okCount} of ${targets.length} texts downloaded`);
+  }
+
+  async function uninstallTradition(tradition) {
+    const ids = SOURCE_TEXTS.filter(s => s.tradition === tradition).map(s => s.id);
+    await deleteSourceRowsForIds(ids);
+    ids.forEach(id => { sourceStatus[id] = 'missing'; delete sourceDiagnostics[id]; });
+    await setTraditionOverride(tradition, false);
+    const all = await loadAllSourceRows();
+    buildSourceIndex(all);
+    renderSourceStatusPanel();
+    showToast(`${tradition} removed from this device — download it again anytime`);
+  }
+
+  // Display order for tradition groups — SOURCE_TEXTS insertion order, deduped.
+  function sourceTraditionOrder() {
+    const seen = [];
+    SOURCE_TEXTS.forEach(s => { if (!seen.includes(s.tradition)) seen.push(s.tradition); });
+    return seen;
   }
 
   function renderSourceStatusPanel() {
     const el = document.getElementById('source-status-list');
     if (!el) return;
 
-    el.innerHTML = SOURCE_TEXTS.map(s => {
-      const st = sourceStatus[s.id] || 'missing';
-      const dotClass = st === 'ready' ? 'ready' : (st === 'loading' ? 'downloading' : 'offline-empty');
-      const label = st === 'ready' ? 'Loaded — searchable offline'
-        : st === 'loading' ? 'Downloading…'
-        : st === 'failed' ? 'Unavailable'
-        : 'Not downloaded yet';
+    el.innerHTML = sourceTraditionOrder().map(tradition => {
+      const sources = SOURCE_TEXTS.filter(s => s.tradition === tradition);
+      const wanted = isTraditionWanted(tradition);
+      const statuses = sources.map(s => sourceStatus[s.id] || 'missing');
+      const readyCount = statuses.filter(st => st === 'ready').length;
+      const anyLoading = statuses.includes('loading');
+      const allReady = readyCount === sources.length;
 
-      const attempts = sourceDiagnostics[s.id] || [];
-      const diag = attempts.length
-        ? `<div class="source-diag">${attempts.map(a => `
-             <div class="diag-line">
-               <span class="diag-url">${escapeHtml(a.url.length > 72 ? a.url.slice(0, 69) + '…' : a.url)}</span>
-               <span class="diag-result">${escapeHtml(a.result)}</span>
-             </div>`).join('')}</div>`
-        : '';
+      let dotClass, summary;
+      if (anyLoading) {
+        dotClass = 'downloading'; summary = 'Downloading…';
+      } else if (allReady) {
+        dotClass = 'ready'; summary = `Downloaded — ${readyCount} text${readyCount === 1 ? '' : 's'} searchable offline`;
+      } else if (readyCount > 0) {
+        dotClass = 'offline-empty'; summary = `Partially downloaded — ${readyCount} of ${sources.length} texts`;
+      } else {
+        dotClass = 'offline-empty'; summary = wanted ? 'Not downloaded yet' : 'Not downloaded — optional';
+      }
+
+      const bytes = sources.reduce((sum, s) => sum + (sourceByteSize[s.id] || 0), 0);
+      const sizeLabel = bytes > 0 ? ` (${formatBytes(bytes)} on device)` : '';
+
+      const actionBtn = anyLoading ? ''
+        : allReady
+          ? `<button class="contact-btn source-action-btn" data-action="uninstall" data-tradition="${escapeHtml(tradition)}">Remove from device</button>`
+          : `<button class="submit-btn source-action-btn" data-action="install" data-tradition="${escapeHtml(tradition)}">Download</button>`;
+
+      const licenses = [...new Set(sources.map(s => s.license))].join(' · ');
+
+      const filesDetail = sources.map(s => {
+        const st = sourceStatus[s.id] || 'missing';
+        const label = st === 'ready' ? 'Loaded' : st === 'loading' ? 'Downloading…' : st === 'failed' ? 'Unavailable' : 'Not downloaded';
+        const attempts = sourceDiagnostics[s.id] || [];
+        const diag = attempts.length
+          ? `<div class="source-diag">${attempts.map(a => `
+               <div class="diag-line">
+                 <span class="diag-url">${escapeHtml(a.url.length > 72 ? a.url.slice(0, 69) + '…' : a.url)}</span>
+                 <span class="diag-result">${escapeHtml(a.result)}</span>
+               </div>`).join('')}</div>`
+          : '';
+        return `<div class="source-file-row"><span>${escapeHtml(s.label)}</span><span>${label}</span></div>${diag}`;
+      }).join('');
 
       return `
         <div class="source-status-row">
-          <p class="bible-status ${dotClass}" style="margin:0;"><span class="dot"></span><strong>${escapeHtml(s.label)}</strong> — ${label}</p>
-          <p class="source-license">${escapeHtml(s.tradition)} · ${escapeHtml(s.license)}</p>
-          ${diag}
+          <div class="source-status-head">
+            <p class="bible-status ${dotClass}" style="margin:0;"><span class="dot"></span><strong>${escapeHtml(tradition)}</strong> — ${summary}${sizeLabel}</p>
+            ${actionBtn}
+          </div>
+          <p class="source-license">${escapeHtml(licenses)}</p>
+          <details class="source-file-details"><summary>${sources.length} text${sources.length === 1 ? '' : 's'}</summary>${filesDetail}</details>
         </div>`;
     }).join('');
+
+    el.querySelectorAll('[data-action="uninstall"]').forEach(btn => {
+      btn.addEventListener('click', () => uninstallTradition(btn.dataset.tradition));
+    });
+    el.querySelectorAll('[data-action="install"]').forEach(btn => {
+      btn.addEventListener('click', () => installTradition(btn.dataset.tradition));
+    });
   }
 
   /* Builds a plain-text report of every fetch attempt — easy to copy and send. */
@@ -2583,11 +2706,12 @@
       showToast('You appear to be offline');
       return;
     }
-    SOURCE_TEXTS.forEach(s => { sourceStatus[s.id] = 'loading'; });
+    const targets = SOURCE_TEXTS.filter(s => isTraditionWanted(s.tradition));
+    targets.forEach(s => { sourceStatus[s.id] = 'loading'; });
     renderSourceStatusPanel();
-    await downloadSourceTexts();
-    const okCount = SOURCE_TEXTS.filter(s => sourceStatus[s.id] === 'ready').length;
-    showToast(`${okCount} of ${SOURCE_TEXTS.length} sources loaded`);
+    await downloadSourceTexts(targets);
+    const okCount = targets.filter(s => sourceStatus[s.id] === 'ready').length;
+    showToast(`${okCount} of ${targets.length} installed sources loaded`);
   }
 
   /* Renders matches from other traditions' texts, showing only the text
