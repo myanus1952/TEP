@@ -542,8 +542,10 @@
   const resultsEl = document.getElementById('results');
   const metaEl = document.getElementById('results-meta');
   const emptyEl = document.getElementById('empty');
+  const textFilterSelect = document.getElementById('text-filter');
 
   let activeFilter = 'all';
+  let activeSourceId = null; // narrows activeFilter down to one specific SOURCE_TEXTS entry, via the text-filter dropdown
 
   function bibleLink(ref) {
     const clean = ref.replace(/\s*\(.*?\)\s*$/, '').trim();
@@ -750,6 +752,7 @@
   }
 
   function currentSourceIdWhitelist() {
+    if (activeSourceId) return sourceStatus[activeSourceId] === 'ready' ? [activeSourceId] : [];
     if (activeFilter === 'all') return null;
     return SOURCE_TEXTS.filter(s => s.tradition === activeFilter && sourceStatus[s.id] === 'ready').map(s => s.id);
   }
@@ -905,11 +908,39 @@
     renderDebounceTimer = setTimeout(render, 150);
   }
   searchInput.addEventListener('input', scheduleRender);
+
+  // Repopulates the text-filter dropdown for whichever tradition is now
+  // active. Hidden entirely for "All" and for any tradition with fewer than
+  // two source texts (Islam's six hadith collections need it; Apocrypha's
+  // single deuterocanon file doesn't — a dropdown with only one real choice
+  // besides "All" is just noise).
+  function updateTextFilterForTradition(tradition) {
+    activeSourceId = null;
+    if (!textFilterSelect) return;
+    const matching = tradition === 'all' ? [] : SOURCE_TEXTS.filter(s => s.tradition === tradition);
+    if (matching.length < 2) {
+      textFilterSelect.style.display = 'none';
+      textFilterSelect.innerHTML = '';
+      return;
+    }
+    textFilterSelect.innerHTML = `<option value="">All ${escapeHtml(tradition)} texts</option>` +
+      matching.map(s => `<option value="${escapeHtml(s.id)}">${escapeHtml(s.label)}</option>`).join('');
+    textFilterSelect.value = '';
+    textFilterSelect.style.display = '';
+  }
+  if (textFilterSelect) {
+    textFilterSelect.addEventListener('change', () => {
+      activeSourceId = textFilterSelect.value || null;
+      render();
+    });
+  }
+
   chips.forEach(chip => {
     chip.addEventListener('click', () => {
       chips.forEach(c => c.classList.remove('active'));
       chip.classList.add('active');
       activeFilter = chip.dataset.filter;
+      updateTextFilterForTradition(activeFilter);
       render();
     });
   });
@@ -2275,16 +2306,21 @@
 
     // A tradition (e.g. Islam) can now have several source texts (Qur'an
     // plus the six hadith collections), so filtering is by a *list* of
-    // matching sources, not a single one.
-    const matchingSources = activeFilter === 'all' ? SOURCE_TEXTS : SOURCE_TEXTS.filter(s => s.tradition === activeFilter);
+    // matching sources, not a single one — narrowed further to just one
+    // specific text when the text-filter dropdown picks one out.
+    const matchingSources = activeSourceId
+      ? SOURCE_TEXTS.filter(s => s.id === activeSourceId)
+      : (activeFilter === 'all' ? SOURCE_TEXTS : SOURCE_TEXTS.filter(s => s.tradition === activeFilter));
     const filteringToUncoveredReligion = activeFilter !== 'all' && matchingSources.length === 0;
 
     if (heading) {
       heading.textContent = filteringToUncoveredReligion
         ? `From ${activeFilter}'s own text`
-        : (activeFilter === 'all'
-            ? `From other traditions' own texts`
-            : `From ${activeFilter}'s own text${matchingSources.length > 1 ? 's' : ''}`);
+        : activeSourceId
+          ? `From ${matchingSources[0] ? matchingSources[0].label : activeFilter}`
+          : (activeFilter === 'all'
+              ? `From other traditions' own texts`
+              : `From ${activeFilter}'s own text${matchingSources.length > 1 ? 's' : ''}`);
     }
 
     // The sidebar has a religion selected that has no primary text loaded
