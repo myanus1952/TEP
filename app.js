@@ -48,6 +48,29 @@
       ]
     },
     {
+      claim: "Salvation on Judgment Day depends on whether one's good deeds outweigh the bad on the scales",
+      religion: "Islam",
+      keywords: ["scales of deeds islam", "weighing of good and bad deeds", "mizan judgment day", "islam salvation by works"],
+      sourceQuote: { ref: "Qur'an 23:102-103", text: "Then those whose balance (of good deeds) is heavy,- they will attain salvation: But those whose balance is light, will be those who have lost their souls, in Hell will they abide." },
+      verses: [
+        { ref: "Ephesians 2:8-9", text: "For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast." },
+        { ref: "Titus 3:5", text: "Not by works of righteousness which we have done, but according to his mercy he saved us, by the washing of regeneration, and renewing of the Holy Ghost;" },
+        { ref: "Galatians 2:16", text: "Knowing that a man is not justified by the works of the law, but by the faith of Jesus Christ, even we have believed in Jesus Christ, that we might be justified by the faith of Christ, and not by the works of the law: for by the works of the law shall no flesh be justified." }
+      ]
+    },
+    {
+      claim: "The Torah and Gospel were corrupted by their followers, so the Qur'an corrects and supersedes them",
+      religion: "Islam",
+      keywords: ["tahrif corruption of scripture", "quran corrects the bible", "islam bible corrupted", "quran supersedes torah gospel"],
+      sourceQuote: { ref: "Qur'an 5:13", text: "But because of their breach of their covenant, We cursed them, and made their hearts grow hard; they change the words from their (right) places and forget a good part of the message that was sent them..." },
+      note: "This is the doctrine of tahrif (scriptural corruption), commonly invoked to explain differences between the Qur'an and the Bible.",
+      verses: [
+        { ref: "Psalm 119:89", text: "For ever, O LORD, thy word is settled in heaven." },
+        { ref: "Matthew 24:35", text: "Heaven and earth shall pass away, but my words shall not pass away." },
+        { ref: "1 Peter 1:25", text: "But the word of the Lord endureth for ever. And this is the word which by the gospel is preached unto you." }
+      ]
+    },
+    {
       claim: "Jesus is Michael the Archangel, a created being",
       religion: "Jehovah's Witnesses",
       keywords: ["jesus is michael the archangel", "jehovah witness jesus created", "jesus not god jw", "arian jw"],
@@ -67,6 +90,28 @@
         { ref: "Revelation 7:9", text: "After this I beheld, and, lo, a great multitude, which no man could number, of all nations, and kindreds, and people, and tongues, stood before the throne, and before the Lamb, clothed with white robes, and palms in their hands;" },
         { ref: "Revelation 7:10", text: "And cried with a loud voice, saying, Salvation to our God which sitteth upon the throne, and unto the Lamb." },
         { ref: "John 14:2-3", text: "In my Father's house are many mansions: if it were not so, I would have told you. I go to prepare a place for you. And if I go and prepare a place for you, I will come again, and receive you unto myself; that where I am, there ye may be also." }
+      ]
+    },
+    {
+      claim: "The wicked will be annihilated, not tormented forever in hell",
+      religion: "Jehovah's Witnesses",
+      keywords: ["annihilationism jw", "hell is the grave", "jehovah witness no eternal torment", "wicked cease to exist"],
+      positionSummary: "Jehovah's Witnesses teach that hell (Sheol/Hades) is simply mankind's common grave, a state of unconscious non-existence, and that the unrepentant wicked will ultimately be annihilated — ceasing to exist entirely — rather than suffering conscious eternal torment.",
+      verses: [
+        { ref: "Matthew 25:46", text: "And these shall go away into everlasting punishment: but the righteous into life eternal." },
+        { ref: "Revelation 14:11", text: "And the smoke of their torment ascendeth up for ever and ever: and they have no rest day nor night, who worship the beast and his image, and whosoever receiveth the mark of his name." },
+        { ref: "Revelation 20:10", text: "And the devil that deceived them was cast into the lake of fire and brimstone... and shall be tormented day and night for ever and ever." }
+      ]
+    },
+    {
+      claim: "Christ returned invisibly in 1914 to begin ruling as heavenly king",
+      religion: "Jehovah's Witnesses",
+      keywords: ["1914 invisible return jw", "jehovah witness christ already returned", "last days began 1914", "invisible presence parousia"],
+      positionSummary: "Jehovah's Witnesses teach that Jesus Christ began an invisible heavenly rule as King in the year 1914, marking the start of the \"last days,\" rather than a still-future, visible, bodily return witnessed by all people.",
+      verses: [
+        { ref: "Matthew 24:27", text: "For as the lightning cometh out of the east, and shineth even unto the west; so shall also the coming of the Son of man be." },
+        { ref: "Acts 1:11", text: "Which also said, Ye men of Galilee, why stand ye gazing up into heaven? this same Jesus, which is taken up from you into heaven, shall so come in like manner as ye have seen him go into heaven." },
+        { ref: "Revelation 1:7", text: "Behold, he cometh with clouds; and every eye shall see him, and they also which pierced him: and all kindreds of the earth shall wail because of him." }
       ]
     },
     {
@@ -91,6 +136,29 @@
       ]
     },
     {
+      claim: "God the Father was once a mortal man who progressed to become God, and righteous humans can likewise become gods",
+      religion: "Mormonism",
+      keywords: ["eternal progression mormon", "as man is god once was", "lds exaltation to godhood", "god was once a man"],
+      sourceQuote: { ref: "Doctrine and Covenants 132:20", text: "Then shall they be gods, because they have no end; therefore shall they be from everlasting to everlasting, because they continue; then shall they be above all, because all things are subject unto them." }, // VERIFY WORDING
+      note: "Popularly summarized in the Lorenzo Snow couplet: \"As man now is, God once was; as God now is, man may become.\"",
+      verses: [
+        { ref: "Isaiah 43:10", text: "...before me there was no God formed, neither shall there be after me." },
+        { ref: "Malachi 3:6", text: "For I am the LORD, I change not; therefore ye sons of Jacob are not consumed." },
+        { ref: "Numbers 23:19", text: "God is not a man, that he should lie; neither the son of man, that he should repent: hath he said, and shall he not do it? or hath he spoken, and shall he not make it good?" }
+      ]
+    },
+    {
+      claim: "Living people can be baptized on behalf of the dead so the deceased may receive the ordinance vicariously",
+      religion: "Mormonism",
+      keywords: ["baptism for the dead mormon", "proxy baptism lds", "vicarious baptism dead", "temple baptism ancestors"],
+      positionSummary: "Latter-day Saints practice baptism by proxy on behalf of deceased ancestors, citing 1 Corinthians 15:29 as scriptural precedent, so that the dead may still accept the ordinance in the spirit world.",
+      verses: [
+        { ref: "Hebrews 9:27", text: "And as it is appointed unto men once to die, but after this the judgment:" },
+        { ref: "John 3:36", text: "He that believeth on the Son hath everlasting life: and he that believeth not the Son shall not see life; but the wrath of God abideth on him." },
+        { ref: "Hebrews 9:12", text: "Neither by the blood of goats and calves, but by his own blood he entered in once into the holy place, having obtained eternal redemption for us." }
+      ]
+    },
+    {
       claim: "All paths lead to the same God",
       religion: "Hinduism",
       keywords: ["all religions same god", "all paths lead to god", "hindu pluralism", "many paths one god"],
@@ -107,6 +175,27 @@
       sourceQuote: { ref: "Bhagavad Gita 2:22", text: "As a man casts off worn-out garments and puts on others that are new, so the embodied soul casts off worn-out bodies and enters into others that are new." }, // VERIFY WORDING
       verses: [
         { ref: "Hebrews 9:27", text: "And as it is appointed unto men once to die, but after this the judgment:" }
+      ]
+    },
+    {
+      claim: "The four castes originate from a divine ordinance, and one's duty is fixed by the caste into which they are born",
+      religion: "Hinduism",
+      keywords: ["caste system hindu", "varna dharma", "four castes gita", "hereditary duty caste"],
+      sourceQuote: { ref: "Bhagavad Gita 4:13", text: "The system of four stations was created by Me, according to the distinction of Gunas and Karma. Though I am their creator, know Me to be non-agent and immutable." },
+      note: "Gita 18:47 reinforces this: \"Better is one's own duty, though ill done, than the duty of another, though well-performed.\"",
+      verses: [
+        { ref: "Galatians 3:28", text: "There is neither Jew nor Greek, there is neither bond nor free, there is neither male nor female: for ye are all one in Christ Jesus." },
+        { ref: "Acts 17:26", text: "And hath made of one blood all nations of men for to dwell on all the face of the earth, and hath determined the times before appointed, and the bounds of their habitation;" }
+      ]
+    },
+    {
+      claim: "The individual self (atman) is ultimately identical with the ultimate reality (Brahman)",
+      religion: "Hinduism",
+      keywords: ["atman is brahman", "tat tvam asi", "that art thou upanishad", "hindu monism self is god"],
+      sourceQuote: { ref: "Chandogya Upanishad 440", text: "...this whole world has that as its soul. That is Reality. That is Atman (Soul). That art thou, Svetaketu." },
+      verses: [
+        { ref: "Isaiah 55:8-9", text: "For my thoughts are not your thoughts, neither are your ways my ways, saith the LORD. For as the heavens are higher than the earth, so are my ways higher than your ways, and my thoughts than your thoughts." },
+        { ref: "Isaiah 46:9", text: "...I am God, and there is none else; I am God, and there is none like me," }
       ]
     },
     {
@@ -131,6 +220,28 @@
       ]
     },
     {
+      claim: "Each person must strive for their own liberation; the Buddha is a teacher, not a savior",
+      religion: "Buddhism",
+      keywords: ["buddha only points the way", "no savior buddhism", "self-reliance liberation", "work out your own salvation buddhist"],
+      sourceQuote: { ref: "Dhammapada 276", text: "You yourselves must do the work, the Realized Ones just show the way. Meditators practicing absorption are released from Māra's bonds." },
+      verses: [
+        { ref: "John 14:6", text: "Jesus saith unto him, I am the way, the truth, and the life: no man cometh unto the Father, but by me." },
+        { ref: "Ephesians 2:8-9", text: "For by grace are ye saved through faith; and that not of yourselves: it is the gift of God: Not of works, lest any man should boast." },
+        { ref: "Titus 3:5", text: "Not by works of righteousness which we have done, but according to his mercy he saved us, by the washing of regeneration, and renewing of the Holy Ghost;" }
+      ]
+    },
+    {
+      claim: "The highest goal is Nirvana, the extinguishing of the self and all craving — not everlasting conscious life with a personal God",
+      religion: "Buddhism",
+      keywords: ["nirvana extinguishment", "nibbana highest happiness", "buddhist final goal", "cessation not eternal life"],
+      sourceQuote: { ref: "Dhammapada 204", text: "Health is the ultimate blessing; contentment, the ultimate wealth; trust is the ultimate family; extinguishment, the ultimate happiness." },
+      note: "Nibbana (\"extinguishment\") — release from the cycle of craving and rebirth — is presented here as the highest happiness attainable.",
+      verses: [
+        { ref: "John 17:3", text: "And this is life eternal, that they might know thee the only true God, and Jesus Christ, whom thou hast sent." },
+        { ref: "Revelation 21:3-4", text: "...Behold, the tabernacle of God is with men, and he will dwell with them, and they shall be his people, and God himself shall be with them, and be their God. And God shall wipe away all tears from their eyes; and there shall be no more death, neither sorrow, nor crying..." }
+      ]
+    },
+    {
       claim: "There's no evidence for God",
       religion: "Atheism",
       keywords: ["no evidence for god", "atheism proof god", "no proof god exists"],
@@ -147,6 +258,28 @@
       positionSummary: "Many atheists argue that moral behavior arises from evolved social instincts, empathy, and reason, and does not depend on belief in a deity.",
       verses: [
         { ref: "Romans 2:14-15", text: "For when the Gentiles, which have not the law, do by nature the things contained in the law, these, having not the law, are a law unto themselves: Which shew the work of the law written in their hearts, their conscience also bearing witness, and their thoughts the mean while accusing or else excusing one another;" }
+      ]
+    },
+    {
+      claim: "The universe can be explained by natural causes alone, without need of a Creator",
+      religion: "Atheism",
+      keywords: ["universe without god", "big bang no creator", "abiogenesis atheism", "natural causes not god"],
+      positionSummary: "Many atheists hold that cosmological models such as the Big Bang, and the possibility of abiogenesis, show the universe and life can in principle be accounted for by natural law and chance, without requiring a supernatural first cause.",
+      verses: [
+        { ref: "Genesis 1:1", text: "In the beginning God created the heaven and the earth." },
+        { ref: "Hebrews 11:3", text: "Through faith we understand that the worlds were framed by the word of God, so that things which are seen were not made of things which do appear." },
+        { ref: "Psalm 33:6", text: "By the word of the LORD were the heavens made; and all the host of them by the breath of his mouth." }
+      ]
+    },
+    {
+      claim: "The existence of evil and suffering is incompatible with an all-powerful, all-good God",
+      religion: "Atheism",
+      keywords: ["problem of evil", "suffering disproves god", "atheism argument from evil", "omnipotent good god suffering"],
+      positionSummary: "The classical \"problem of evil\" argues that the amount and severity of suffering in the world is difficult to reconcile with a God who is simultaneously all-powerful and perfectly good — if he could prevent evil and doesn't, he isn't good; if he would but can't, he isn't all-powerful.",
+      verses: [
+        { ref: "Genesis 3:17-19", text: "...cursed is the ground for thy sake; in sorrow shalt thou eat of it all the days of thy life... In the sweat of thy face shalt thou eat bread, till thou return unto the ground..." },
+        { ref: "Romans 8:20-22", text: "For the creature was made subject to vanity, not willingly, but by reason of him who hath subjected the same in hope... For we know that the whole creation groaneth and travaileth in pain together until now." },
+        { ref: "Revelation 21:4", text: "And God shall wipe away all tears from their eyes; and there shall be no more death, neither sorrow, nor crying, neither shall there be any more pain: for the former things are passed away." }
       ]
     },
     {
@@ -168,6 +301,26 @@
       ]
     },
     {
+      claim: "All major religions are different paths up the same mountain, teaching the same essential truths",
+      religion: "Pluralism",
+      keywords: ["paths up the same mountain", "perennialism", "all religions same essential truth", "transcendent unity of religions"],
+      positionSummary: "Perennialist pluralism holds that beneath surface differences in ritual and doctrine, the major world religions converge on the same core spiritual and ethical truths, like different paths up a single mountain toward the same summit.",
+      verses: [
+        { ref: "John 14:6", text: "Jesus saith unto him, I am the way, the truth, and the life: no man cometh unto the Father, but by me." },
+        { ref: "Isaiah 45:5", text: "I am the LORD, and there is none else, there is no God beside me..." }
+      ]
+    },
+    {
+      claim: "Insisting that only one religion is true is arrogant and the cause of religious conflict",
+      religion: "Pluralism",
+      keywords: ["exclusivism arrogant", "religious conflict caused by exclusivity", "intolerant to claim one true religion"],
+      positionSummary: "A common pluralist objection holds that exclusive truth-claims are inherently intolerant, and that much religious conflict throughout history stems from this insistence rather than from any one religion's specific content.",
+      verses: [
+        { ref: "1 Peter 3:15", text: "But sanctify the Lord God in your hearts: and be ready always to give an answer to every man that asketh you a reason of the hope that is in you with meekness and fear:" },
+        { ref: "Ephesians 4:15", text: "But speaking the truth in love, may grow up into him in all things, which is the head, even Christ:" }
+      ]
+    },
+    {
       claim: "Humans determine their own values without appeal to the supernatural",
       religion: "Humanism",
       keywords: ["secular humanism values", "human-centered ethics", "no supernatural morality"],
@@ -184,6 +337,26 @@
       positionSummary: "Humanists generally hold that reason, evidence, and scientific inquiry — not revelation — are the most reliable guides to truth and to living well.",
       verses: [
         { ref: "Proverbs 1:7", text: "The fear of the LORD is the beginning of knowledge: but fools despise wisdom and instruction." }
+      ]
+    },
+    {
+      claim: "Human dignity and rights derive from our shared humanity, not from being created in God's image",
+      religion: "Humanism",
+      keywords: ["human dignity secular", "rights from humanity not god", "humanist dignity without imago dei"],
+      positionSummary: "Secular Humanism grounds human dignity and rights in our common humanity and capacity for reason and empathy, rather than in being made in the image of a Creator.",
+      verses: [
+        { ref: "Genesis 1:27", text: "So God created man in his own image, in the image of God created he him; male and female created he them." },
+        { ref: "Psalm 8:4-5", text: "What is man, that thou art mindful of him? and the son of man, that thou visitest him? For thou hast made him a little lower than the angels, and hast crowned him with glory and honour." }
+      ]
+    },
+    {
+      claim: "This present life is the only one we have, so meaning must be found and created within it",
+      religion: "Humanism",
+      keywords: ["this life is all there is", "humanist manifesto no afterlife", "secular meaning in this life only"],
+      positionSummary: "Humanist Manifestos describe this present life as \"all and enough,\" holding that since there is no evidence of an afterlife, human beings should find and create meaning, joy, and ethical purpose within their one earthly life.",
+      verses: [
+        { ref: "1 Corinthians 15:19", text: "If in this life only we have hope in Christ, we are of all men most miserable." },
+        { ref: "2 Corinthians 4:18", text: "While we look not at the things which are seen, but at the things which are not seen: for the things which are seen are temporal; but the things which are not seen are eternal." }
       ]
     },
     {
@@ -207,6 +380,27 @@
       ]
     },
     {
+      claim: "God forbade the knowledge of good and evil out of jealousy, fearing humanity would become his equal",
+      religion: "Luciferianism",
+      keywords: ["god jealous of humanity", "become as one of us genesis", "luciferian reading of eden", "god fears competition"],
+      sourceQuote: { ref: "Genesis 3:22", text: "And the LORD God said, Behold, the man is become as one of us, to know good and evil: and now, lest he put forth his hand, and take also of the tree of life, and eat, and live for ever:" },
+      note: "Some Luciferian readings interpret God's exclusion of Adam and Eve from Eden not as a just response to disobedience, but as anxious self-protection by a threatened deity guarding forbidden knowledge and immortality for himself alone.",
+      verses: [
+        { ref: "James 1:13", text: "Let no man say when he is tempted, I am tempted of God: for God cannot be tempted with evil, neither tempteth he any man." },
+        { ref: "Psalm 145:8-9", text: "The LORD is gracious, and full of compassion; slow to anger, and of great mercy. The LORD is good to all: and his tender mercies are over all his works." }
+      ]
+    },
+    {
+      claim: "Individual will and self-determination are sovereign; no external law or deity should bind the self",
+      religion: "Luciferianism",
+      keywords: ["sovereign self luciferian", "self as highest authority", "reject external divine law", "individual will supreme"],
+      positionSummary: "A recurring Luciferian theme treats the sovereign, self-determining individual will as the highest authority, rejecting submission to any external divine law as a form of bondage to be thrown off.",
+      verses: [
+        { ref: "Proverbs 14:12", text: "There is a way which seemeth right unto a man, but the end thereof are the ways of death." },
+        { ref: "James 4:7", text: "Submit yourselves therefore to God. Resist the devil, and he will flee from you." }
+      ]
+    },
+    {
       claim: "All religions worship the same God under different names",
       religion: "Freemasonry",
       keywords: ["great architect of the universe", "freemasonry all religions same god", "masonic god"],
@@ -223,6 +417,26 @@
       positionSummary: "Mainstream Masonic bodies officially describe Freemasonry as a fraternal, charitable organization built around shared moral teaching and symbolism, not a religion or a path to salvation — though it does require belief in a \"Supreme Being.\"",
       verses: [
         { ref: "James 1:22", text: "But be ye doers of the word, and not hearers only, deceiving your own selves." }
+      ]
+    },
+    {
+      claim: "The soul's immortality is taught through the allegory of Hiram Abiff being 'raised' from a symbolic death",
+      religion: "Freemasonry",
+      keywords: ["hiram abiff legend", "master mason raised allegory", "masonic third degree resurrection allegory"],
+      positionSummary: "The Masonic third-degree (\"Master Mason\") ritual centers on the legend of Hiram Abiff, the Temple's builder, who is murdered and then symbolically \"raised\" — presented as an allegory teaching the immortality of the soul, distinct from any claim to an actual, historical resurrection.",
+      verses: [
+        { ref: "1 Corinthians 15:3-4", text: "For I delivered unto you first of all that which I also received, how that Christ died for our sins according to the scriptures; And that he was buried, and that he rose again the third day according to the scriptures:" },
+        { ref: "John 11:25", text: "Jesus said unto her, I am the resurrection, and the life: he that believeth in me, though he were dead, yet shall he live:" }
+      ]
+    },
+    {
+      claim: "A morally upright life, summarized as being 'good and true,' is what makes a person acceptable to God",
+      religion: "Freemasonry",
+      keywords: ["masonic morality acceptable to god", "good and true mason", "celestial lodge above", "masonic works based acceptance"],
+      positionSummary: "Masonic teaching emphasizes moral uprightness, brotherly love, and charitable works as what qualifies a soul for the \"Celestial Lodge above,\" without reference to salvation through Christ's atonement specifically.",
+      verses: [
+        { ref: "Isaiah 64:6", text: "But we are all as an unclean thing, and all our righteousnesses are as filthy rags; and we all do fade as a leaf; and our iniquities, like the wind, have taken us away." },
+        { ref: "Romans 3:20", text: "Therefore by the deeds of the law there shall no flesh be justified in his sight: for by the law is the knowledge of sin." }
       ]
     },
     {
@@ -420,6 +634,27 @@
         { ref: "1 Timothy 3:2", text: "A bishop then must be blameless, the husband of one wife, vigilant, sober, of good behaviour, given to hospitality, apt to teach;" }
       ]
     },
+    {
+      claim: "Sacred images and statues may be venerated because they are reminders of Christ and the saints, not gods themselves",
+      religion: "Catholicism",
+      keywords: ["veneration of images catholic", "statues not idols", "catholic images second commandment", "praying before images"],
+      sourceQuote: { ref: "Baltimore Catechism, Q. 341", text: "The First Commandment does forbid the making of images if they are made to be adored as gods, but it does not forbid the making of them to put us in mind of Jesus Christ, His Blessed Mother, and the saints." },
+      note: "Q. 343 of the same catechism is explicit that Catholics are taught not to pray to the images themselves: \"It is not allowed to pray to the crucifix or images and relics of the saints, for they have no life, nor power to help us, nor sense to hear us.\"",
+      verses: [
+        { ref: "Exodus 20:4-5", text: "Thou shalt not make unto thee any graven image, or any likeness of any thing that is in heaven above, or that is in the earth beneath, or that is in the water under the earth: Thou shalt not bow down thyself to them, nor serve them..." },
+        { ref: "Isaiah 44:9", text: "They that make a graven image are all of them vanity; and their delectable things shall not profit..." }
+      ]
+    },
+    {
+      claim: "The Mass is a true, propitiatory sacrifice offered for the living and the dead, not merely a commemoration of Calvary",
+      religion: "Catholicism",
+      keywords: ["sacrifice of the mass", "mass propitiatory sacrifice", "trent mass canon", "eucharist re-presents calvary"],
+      sourceQuote: { ref: "Council of Trent, Session the Twenty-Second (On The Sacrifice Of The Mass), Canon III", text: "If any one saith, that the sacrifice of the mass is only a sacrifice of praise and of thanksgiving; or, that it is a bare commemoration of the sacrifice consummated on the cross, but not a propitiatory sacrifice; or, that it profits him only who receives; and that it ought not to be offered for the living and the dead for sins, pains, satisfactions, and other necessities; let him be anathema." },
+      verses: [
+        { ref: "Hebrews 9:25-28", text: "Nor yet that he should offer himself often... but now once in the end of the world hath he appeared to put away sin by the sacrifice of himself... so Christ was once offered to bear the sins of many..." },
+        { ref: "Hebrews 10:12-14", text: "But this man, after he had offered one sacrifice for sins for ever, sat down on the right hand of God... For by one offering he hath perfected for ever them that are sanctified." }
+      ]
+    },
     /*
      * These three are tagged "Apocrypha", not "Catholicism" — they're
      * specific claims found within the deuterocanonical books themselves
@@ -472,6 +707,28 @@
       verses: [
         { ref: "Luke 24:44", text: "And he said unto them, These are the words which I spake unto you, while I was yet with you, that all things must be fulfilled, which were written in the law of Moses, and in the prophets, and in the psalms, concerning me." },
         { ref: "Romans 3:2", text: "Much every way: chiefly, because that unto them were committed the oracles of God." }
+      ]
+    },
+    {
+      claim: "Departed righteous souls in heaven pray for and intercede on behalf of the living",
+      religion: "Apocrypha",
+      keywords: ["intercession of the dead apocrypha", "onias jeremiah vision", "2 maccabees departed saints pray", "saints in heaven intercede"],
+      sourceQuote: { ref: "2 Machabees 15:12-14", text: "Onias, who had been high priest, a good and virtuous man... prayed for all the people of the Jews... This is a lover of his brethren, and of the people of Israel: this is he that prayeth much for the people, and for all the holy city, Jeremias, the prophet of God." },
+      note: "Judas Machabeus's vision of the deceased Onias and the prophet Jeremiah interceding for Israel from beyond death is cited in support of the intercession of departed saints.",
+      verses: [
+        { ref: "1 Timothy 2:5", text: "For there is one God, and one mediator between God and men, the man Christ Jesus;" },
+        { ref: "Ecclesiastes 9:5", text: "For the living know that they shall die: but the dead know not any thing, neither have they any more a reward; for the memory of them is forgotten." }
+      ]
+    },
+    {
+      claim: "The relics of holy men retain miraculous power even after death",
+      religion: "Apocrypha",
+      keywords: ["relics power apocrypha", "elisha bones prophesied", "ecclesiasticus relics", "sirach body prophesied after death"],
+      sourceQuote: { ref: "Ecclesiasticus 48:14", text: "No word could overcome him, and after death his body prophesied." },
+      note: "Said of the prophet Eliseus (Elisha); compare 2 Kings 13:20-21, where a dead man is restored to life on touching Elisha's bones.",
+      verses: [
+        { ref: "Deuteronomy 34:5-6", text: "So Moses the servant of the LORD died there in the land of Moab... and he buried him... but no man knoweth of his sepulchre unto this day." },
+        { ref: "Acts 14:14-15", text: "Which when the apostles, Barnabas and Paul, heard of, they rent their clothes, and ran in among the people, crying out, And saying, Sirs, why do ye these things? We also are men of like passions with you..." }
       ]
     }
   ];
