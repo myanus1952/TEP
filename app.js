@@ -800,9 +800,45 @@
   const metaEl = document.getElementById('results-meta');
   const emptyEl = document.getElementById('empty');
   const textFilterSelect = document.getElementById('text-filter');
+  const paginationEl = document.getElementById('results-pagination');
 
   let activeFilter = 'all';
   let activeSourceId = null; // narrows activeFilter down to one specific SOURCE_TEXTS entry, via the text-filter dropdown
+
+  // Argument-card pagination: finalizeRender computes the full, sorted match
+  // list once per search and caches it here; clicking a dot just re-slices
+  // and re-renders from the cache instead of re-running the search.
+  const RESULTS_PAGE_SIZE = 7;
+  let currentMatches = [];
+  let currentResultsPage = 0;
+
+  function renderResultsPagination() {
+    if (!paginationEl) return;
+    const totalPages = Math.ceil(currentMatches.length / RESULTS_PAGE_SIZE);
+    if (totalPages <= 1) {
+      paginationEl.style.display = 'none';
+      paginationEl.innerHTML = '';
+      return;
+    }
+    paginationEl.style.display = 'flex';
+    paginationEl.innerHTML = Array.from({ length: totalPages }, (_, i) =>
+      `<button class="page-dot${i === currentResultsPage ? ' active' : ''}" data-page="${i}" aria-label="Page ${i + 1} of ${totalPages}"></button>`
+    ).join('');
+    paginationEl.querySelectorAll('[data-page]').forEach(dot => {
+      dot.addEventListener('click', () => {
+        currentResultsPage = parseInt(dot.dataset.page, 10);
+        renderResultsPage();
+      });
+    });
+  }
+
+  function renderResultsPage() {
+    const start = currentResultsPage * RESULTS_PAGE_SIZE;
+    const pageItems = currentMatches.slice(start, start + RESULTS_PAGE_SIZE);
+    resultsEl.innerHTML = '';
+    pageItems.forEach(entry => resultsEl.appendChild(buildEntryCard(entry)));
+    renderResultsPagination();
+  }
 
   function bibleLink(ref) {
     const clean = ref.replace(/\s*\(.*?\)\s*$/, '').trim();
@@ -1129,13 +1165,15 @@
       .sort((a, b) => b.s - a.s)
       .map(m => m.entry);
 
-    resultsEl.innerHTML = '';
-
     const correctionNote = corrected
       ? `<span class="correction-note">Showing results for "${escapeHtml(query)}"</span>`
       : '';
 
     if (matches.length === 0) {
+      currentMatches = [];
+      currentResultsPage = 0;
+      resultsEl.innerHTML = '';
+      renderResultsPagination();
       emptyEl.style.display = 'block';
       metaEl.innerHTML = correctionNote;
       return;
@@ -1145,9 +1183,11 @@
       ? `${matches.length} match${matches.length === 1 ? '' : 'es'} for "${escapeHtml(query)}" ${correctionNote}`
       : `${matches.length} entries`;
 
-    matches.forEach(entry => {
-      resultsEl.appendChild(buildEntryCard(entry));
-    });
+    // A fresh search/filter always starts back on page 1, even if a stale
+    // page number was left over from a previous, longer result set.
+    currentMatches = matches;
+    currentResultsPage = 0;
+    renderResultsPage();
 
     if (rawQuery) {
       matches.slice(0, 5).forEach(entry => logSearchHit(entryId(entry)));

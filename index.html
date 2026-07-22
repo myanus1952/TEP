@@ -120,6 +120,18 @@
     display:inline-block;color:var(--brass);font-style:italic;margin-left:6px;
   }
 
+  .results-pagination{
+    display:flex;align-items:center;justify-content:center;gap:9px;
+    padding:2px 0 20px;
+  }
+  .page-dot{
+    width:9px;height:9px;padding:0;border-radius:50%;
+    border:1.5px solid var(--ink-soft);background:transparent;cursor:pointer;
+    transition:background .15s ease,border-color .15s ease,transform .15s ease;
+  }
+  .page-dot:hover{border-color:var(--navy);transform:scale(1.15);}
+  .page-dot.active{background:var(--navy);border-color:var(--navy);}
+
   /* ===== Other traditions' source texts ===== */
   #source-results-section{margin-top:40px;padding-top:28px;border-top:1.5px solid var(--ink);}
   .source-group{margin-bottom:22px;}
@@ -577,6 +589,7 @@
 
     <div class="topic-overview" id="topic-overview" style="display:none;"></div>
     <div class="results-meta" id="results-meta"></div>
+    <div class="results-pagination" id="results-pagination" style="display:none;"></div>
     <div id="results"></div>
     <div class="empty-note" id="empty" style="display:none;">
       <h3>Nothing matched that</h3>
