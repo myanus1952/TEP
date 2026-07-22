@@ -1088,6 +1088,143 @@
         return rows;
       }
     },
+    /*
+     * Yoga Sutras of Patanjali — Charles Johnston's 1912 translation,
+     * public domain. 195 sutras across the 4 traditional padas. Only the
+     * translated sutra text is kept, not Johnston's verse-by-verse mystical
+     * commentary.
+     */
+    {
+      id: 'yoga-sutras',
+      label: 'Yoga Sutras of Patanjali',
+      tradition: 'Hinduism',
+      license: 'Public domain — Charles Johnston translation (1912)',
+      urls: ['./yoga-sutras.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
+    /*
+     * Brahma Sutras — George Thibaut's translation (Sacred Books of the
+     * East vols. 34 and 38, Shankara's commentary), public domain. Only
+     * each sutra's own one-sentence translation is kept, not the
+     * surrounding paragraphs of Shankara's commentary/disputation (same
+     * principle as Summa Theologica below — keep the core statement, not
+     * the argument around it). 545 of the traditional ~555 sutras are
+     * present; the remainder could not be cleanly isolated from
+     * surrounding commentary in the source scan (severe OCR corruption of
+     * the sutra number itself in a handful of spots) and are simply
+     * absent rather than guessed at.
+     */
+    {
+      id: 'brahma-sutras',
+      label: 'Brahma Sutras',
+      tradition: 'Hinduism',
+      license: 'Public domain — George Thibaut translation, Sacred Books of the East vols. 34 & 38',
+      urls: ['./brahma-sutras.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
+    /*
+     * The Mahabharata — Kisari Mohan Ganguli's prose translation
+     * (1883-96), the only complete English translation in the public
+     * domain, via sacred-texts.com's Distributed Proofreaders text
+     * (mirrored at github.com/aasi-archive/mbh). One row per numbered
+     * section (adhyaya) rather than per verse — Ganguli's translation is
+     * continuous prose, not individually verse-numbered like the Gita.
+     * 2,110 sections across all 18 parvas.
+     */
+    {
+      id: 'mahabharata',
+      label: 'The Mahabharata',
+      tradition: 'Hinduism',
+      license: 'Public domain — Kisari Mohan Ganguli translation (1883-96)',
+      urls: ['./mahabharata.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
+    /*
+     * The 13 principal Upanishads — Robert Ernest Hume's 1921 translation
+     * ("The Thirteen Principal Upanishads", Oxford University Press),
+     * public domain — the one translation covering exactly this canonical
+     * set of 13 in one voice, including Mandukya (which Max Müller's
+     * earlier SBE edition omits). Verses are numbered as one flat
+     * continuous count per Upanishad rather than reconstructing the full
+     * traditional adhyaya/brahmana/valli/khanda nesting (which varies by
+     * text and isn't consistently machine-derivable from this scan) —
+     * same simplification this app already uses for the Dhammapada,
+     * which also doesn't preserve its traditional vagga divisions.
+     */
+    {
+      id: 'upanishads',
+      label: 'The Principal Upanishads',
+      tradition: 'Hinduism',
+      license: 'Public domain — Robert Ernest Hume translation (1921)',
+      urls: ['./upanishads.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
+    /*
+     * The Ramayana — Ralph T.H. Griffith's verse translation (1870-74),
+     * public domain, via Project Gutenberg. One row per Canto (Griffith's
+     * translation is continuous verse, not individually shloka-numbered).
+     * Covers Books I-VI (Bala, Ayodhya, Aranya, Kishkindha, Sundara,
+     * Yuddha) — the six books universally attributed to the core epic;
+     * Griffith's own translation does not include Uttara Kanda, which is
+     * widely regarded by scholars as a later addition to the text, so
+     * it's absent here rather than patched in from a different translator
+     * (which would mix two voices in what should read as one text). A
+     * handful of individual canto numbers (e.g. 55-58 in Yuddha Kanda) are
+     * also absent from Griffith's own numbering, not lost in extraction —
+     * he kept the traditional numbering for scholarly cross-reference
+     * even where he omitted a passage as a probable later interpolation.
+     */
+    {
+      id: 'ramayana',
+      label: 'The Ramayana',
+      tradition: 'Hinduism',
+      license: 'Public domain — Ralph T.H. Griffith translation (1870-74)',
+      urls: ['./ramayana.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
+    /*
+     * Vishnu Purana — Manmatha Nath Dutt's translation (1894-96), based on
+     * H.H. Wilson's earlier work, public domain. One row per numbered
+     * Section (continuous prose, not verse-numbered), grouped under 6
+     * traditional Books.
+     */
+    {
+      id: 'vishnu-purana',
+      label: 'Vishnu Purana',
+      tradition: 'Hinduism',
+      license: 'Public domain — Manmatha Nath Dutt translation (1894-96), after H.H. Wilson',
+      urls: ['./vishnu-purana.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
+    /*
+     * Manusmriti ("The Laws of Manu") — George Bühler's 1886 translation
+     * (Sacred Books of the East vol. 25), public domain, complete, all 12
+     * chapters. Verse 6:76-77 is preserved as a single combined row because
+     * Bühler's own translation merges those two verses into one continuous
+     * rendering — not a gap in extraction.
+     */
+    {
+      id: 'manusmriti',
+      label: 'Manusmriti (Laws of Manu)',
+      tradition: 'Hinduism',
+      license: 'Public domain — George Bühler translation (1886), Sacred Books of the East vol. 25',
+      urls: ['./manusmriti.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
     {
       id: 'dhammapada',
       label: 'Dhammapada',
@@ -1945,6 +2082,13 @@
     { key: 'hadith-nasai', label: "Sunan an-Nasa'i", tradition: 'Islam' },
     { key: 'hadith-ibnmajah', label: 'Sunan Ibn Majah', tradition: 'Islam' },
     { key: 'gita', label: 'Bhagavad Gita', tradition: 'Hinduism' },
+    { key: 'yoga-sutras', label: 'Yoga Sutras of Patanjali', tradition: 'Hinduism' },
+    { key: 'brahma-sutras', label: 'Brahma Sutras', tradition: 'Hinduism' },
+    { key: 'upanishads', label: 'The Principal Upanishads', tradition: 'Hinduism' },
+    { key: 'ramayana', label: 'The Ramayana', tradition: 'Hinduism' },
+    { key: 'vishnu-purana', label: 'Vishnu Purana', tradition: 'Hinduism' },
+    { key: 'manusmriti', label: 'Manusmriti (Laws of Manu)', tradition: 'Hinduism' },
+    { key: 'mahabharata', label: 'The Mahabharata', tradition: 'Hinduism' },
     { key: 'dhammapada', label: 'Dhammapada', tradition: 'Buddhism' },
     { key: 'baltimore-catechism', label: 'Baltimore Catechism', tradition: 'Catholicism' },
     { key: 'deuterocanon', label: 'Apocrypha / Deuterocanon', tradition: 'Apocrypha' },
@@ -2011,6 +2155,61 @@
       const n = parseInt(m[1], 10);
       const start = Math.floor((n - 1) / 50) * 50 + 1;
       return { group: `Verses ${start}–${start + 49}`, chapter: start, verse: n };
+    }
+    if (sourceKey === 'manusmriti') {
+      const m = ref.match(/^Manusmriti (\d+):(\d+)/);
+      if (!m) return null;
+      return { group: `Chapter ${m[1]}`, chapter: parseInt(m[1], 10), verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'yoga-sutras') {
+      const m = ref.match(/^Yoga Sutras (\d+)\.(\d+)$/);
+      if (!m) return null;
+      const PADA_NAMES = ['', 'Samadhi Pada', 'Sadhana Pada', 'Vibhuti Pada', 'Kaivalya Pada'];
+      return { group: PADA_NAMES[parseInt(m[1], 10)] || `Pada ${m[1]}`, chapter: parseInt(m[1], 10), verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'mahabharata') {
+      const m = ref.match(/^Mahabharata, (\w+) Parva, Section (\d+)$/);
+      if (!m) return null;
+      const PARVA_ORDER = [
+        'Adi', 'Sabha', 'Vana', 'Virata', 'Udyoga', 'Bhishma', 'Drona', 'Karna',
+        'Shalya', 'Sauptika', 'Stri', 'Shanti', 'Anushasana', 'Ashvamedhika',
+        'Ashramavasika', 'Mausala', 'Mahaprasthanika', 'Svargarohana'
+      ];
+      const idx = PARVA_ORDER.indexOf(m[1]);
+      return { group: `${m[1]} Parva`, chapter: idx === -1 ? 999 : idx, verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'upanishads') {
+      const m = ref.match(/^(.+) Upanishad (\d+)$/);
+      if (!m) return null;
+      const UPANISHAD_ORDER = [
+        'Brihadaranyaka', 'Chandogya', 'Taittiriya', 'Aitareya', 'Kaushitaki',
+        'Kena', 'Katha', 'Isha', 'Mundaka', 'Prashna', 'Mandukya',
+        'Svetasvatara', 'Maitri'
+      ];
+      const idx = UPANISHAD_ORDER.indexOf(m[1]);
+      return { group: `${m[1]} Upanishad`, chapter: idx === -1 ? 999 : idx, verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'ramayana') {
+      const m = ref.match(/^Ramayana, (\w+) Kanda, Canto (\d+)$/);
+      if (!m) return null;
+      const KANDA_ORDER = ['Bala', 'Ayodhya', 'Aranya', 'Kishkindha', 'Sundara', 'Yuddha'];
+      const idx = KANDA_ORDER.indexOf(m[1]);
+      return { group: `${m[1]} Kanda`, chapter: idx === -1 ? 999 : idx, verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'vishnu-purana') {
+      const m = ref.match(/^Vishnu Purana (\d+)\.(\d+)$/);
+      if (!m) return null;
+      return { group: `Book ${m[1]}`, chapter: parseInt(m[1], 10), verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'brahma-sutras') {
+      const m = ref.match(/^Brahma Sutras (\d+)\.(\d+)\.(\d+)$/);
+      if (!m) return null;
+      const adhyaya = parseInt(m[1], 10), pada = parseInt(m[2], 10);
+      return {
+        group: `Adhyaya ${m[1]}, Pada ${m[2]}`,
+        chapter: adhyaya * 10 + pada,
+        verse: parseInt(m[3], 10)
+      };
     }
     if (sourceKey === 'rerum-novarum' || sourceKey === 'ineffabilis-deus') {
       const m = ref.match(/para\.\s*(\d+)$/);
