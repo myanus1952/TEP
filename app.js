@@ -3352,7 +3352,7 @@
   const menuOpenBtn = document.getElementById('menu-open');
   const drawerCloseBtn = document.getElementById('drawer-close');
   const drawerLinks = document.querySelectorAll('.drawer-link');
-  const PAGES = ['home', 'bookmarks', 'read', 'mission', 'help', 'settings', 'contact', 'legal'];
+  const PAGES = ['home', 'bookmarks', 'read', 'mission', 'help', 'settings', 'sources', 'contact', 'legal'];
 
   function openDrawer() { drawer.classList.add('open'); drawerOverlay.classList.add('open'); }
   function closeDrawer() { drawer.classList.remove('open'); drawerOverlay.classList.remove('open'); }
