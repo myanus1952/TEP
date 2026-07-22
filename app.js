@@ -2,10 +2,19 @@
   let allBibleVerses = [];
   let allSourceRows = [];
 
-  // Fuse.js search runs in a background worker so it can never block the
-  // main thread — typing stays responsive no matter how large the indexed
-  // text is or how long a query takes to fuzzy-match against it.
-  let searchWorker = null;
+  // Fuse.js search runs across a small pool of background workers so it can
+  // never block the main thread. It's a pool rather than a single worker
+  // because the app now auto-loads ~30 separate source-text collections
+  // (Qur'an, six Hadith books, eight Hindu texts including the 15MB
+  // Mahabharata, eight Buddhist texts, six Catholic/Apocrypha texts) — a
+  // single worker searching all of them one after another is what made an
+  // "All traditions" query take several seconds once enough texts were
+  // loaded. Splitting the ~30 source-text collections across N workers and
+  // searching them concurrently cuts that to roughly 1/N of the wall time
+  // for the same results (see loadSourceIntoWorkers / handlePoolMessage).
+  const SEARCH_POOL_SIZE = Math.min(6, Math.max(2, (navigator.hardwareConcurrency || 4)));
+  const MERGE_TOP_CAP = 30; // matches search-worker.js's own TOP_CAP
+  let searchWorkers = [];
   let bibleIndexReady = false;
   let sourceIndexReady = false;
   let searchReqSeq = 0;
@@ -13,12 +22,15 @@
   const EMPTY_MATCHES = { total: 0, top: [] };
   let pendingOriginalSource = EMPTY_MATCHES;
 
-  function initSearchWorker() {
+  function initSearchWorkers() {
     if (typeof Worker === 'undefined') return; // no Worker support — search panels degrade to empty, non-fatal
-    searchWorker = new Worker('./search-worker.js');
-    searchWorker.onmessage = handleWorkerMessage;
+    searchWorkers = Array.from({ length: SEARCH_POOL_SIZE }, (_, i) => {
+      const w = new Worker('./search-worker.js');
+      w.onmessage = (e) => handlePoolMessage(i, e);
+      return w;
+    });
   }
-  initSearchWorker();
+  initSearchWorkers();
 
   const ENTRIES = [
     // NOTE: entries marked "VERIFY WORDING" quote from a non-Bible source text
@@ -1065,19 +1077,28 @@
   let queuedSearch = null; // { rawQuery, query, phase } — most recent request received while one was in flight
   let searchDispatchedAt = 0;
 
+  // Accumulates one reqId's replies from every pool worker before the search
+  // is considered done — see handlePoolMessage. Only one in flight at a time
+  // (searchInFlight/queuedSearch above), so a single pending record suffices.
+  let poolPending = null;
+
   function dispatchSearch(rawQuery, query, phase) {
     const reqId = ++searchReqSeq;
     latestSearchReqId = reqId;
     searchInFlight = true;
     searchDispatchedAt = performance.now();
-    searchWorker.postMessage({
-      type: 'search',
-      reqId,
-      phase,
-      rawQuery,
-      query,
-      sourceIdWhitelist: currentSourceIdWhitelist()
-    });
+    poolPending = {
+      reqId, rawQuery, query, phase,
+      remaining: searchWorkers.length,
+      bible: EMPTY_MATCHES,
+      sourceTotal: 0,
+      sourceParts: [],
+      bibleMs: 0,
+      maxSourceMs: 0,
+      perSourceMs: {}
+    };
+    const sourceIdWhitelist = currentSourceIdWhitelist();
+    searchWorkers.forEach(w => w.postMessage({ type: 'search', reqId, phase, rawQuery, query, sourceIdWhitelist }));
   }
 
   function requestSearch(rawQuery, query, phase) {
@@ -1094,7 +1115,7 @@
 
     // Below ~2 characters a fuzzy search across tens of thousands of rows is
     // mostly noise anyway — skip dispatching it and save the wasted work.
-    if (!rawQuery || rawQuery.length < 2 || !searchWorker) {
+    if (!rawQuery || rawQuery.length < 2 || !searchWorkers.length) {
       queuedSearch = null;
       latestSearchReqId = ++searchReqSeq; // invalidate any in-flight/queued response from a previous call
       finalizeRender(rawQuery, rawQuery, false, entriesFor(rawQuery), EMPTY_MATCHES, EMPTY_MATCHES);
@@ -1104,12 +1125,30 @@
     requestSearch(rawQuery, rawQuery, 'original');
   }
 
-  // Only reach for spelling correction if the literal query found nothing
-  // anywhere (no claim entries, no Bible verses) — see finalizeRender for
-  // where a successful/failed correction ends up rendered.
-  function handleWorkerMessage(e) {
+  // Each pool worker replies once per reqId with its own slice of results
+  // (bible only ever comes from worker 0 — see loadBibleIntoWorkers). This
+  // accumulates every worker's reply for the current reqId and only moves
+  // on once all of them are in, same "one search in flight" guarantee the
+  // single-worker version had, just fanned out across the pool.
+  function handlePoolMessage(workerIndex, e) {
     const msg = e.data;
     if (msg.type !== 'search-result') return;
+    if (!poolPending || msg.reqId !== poolPending.reqId) return; // stale — a newer request has since superseded this
+
+    poolPending.remaining--;
+    if (msg.bible.total > 0 || workerIndex === 0) poolPending.bible = msg.bible;
+    poolPending.sourceTotal += msg.source.total;
+    poolPending.sourceParts.push(msg.source.top);
+    if (msg.timing) {
+      poolPending.bibleMs = Math.max(poolPending.bibleMs, msg.timing.bibleMs);
+      poolPending.maxSourceMs = Math.max(poolPending.maxSourceMs, msg.timing.sourceMs);
+      Object.assign(poolPending.perSourceMs, msg.timing.perSourceMs);
+    }
+
+    if (poolPending.remaining > 0) return; // still waiting on the rest of the pool
+
+    const merged = poolPending;
+    poolPending = null;
 
     searchInFlight = false;
     if (queuedSearch) {
@@ -1118,33 +1157,40 @@
       dispatchSearch(next.rawQuery, next.query, next.phase);
     }
 
-    if (msg.reqId !== latestSearchReqId) return; // stale — a newer request has since superseded this response
+    if (merged.reqId !== latestSearchReqId) return; // stale — a newer request has since superseded this response
 
-    if (msg.timing) {
-      const roundTripMs = +(performance.now() - searchDispatchedAt).toFixed(1);
-      console.log(`[render] "${msg.query}" (${msg.phase}) — round trip ${roundTripMs}ms, worker-reported ${msg.timing.totalMs}ms`, msg.timing);
-    }
+    const roundTripMs = +(performance.now() - searchDispatchedAt).toFixed(1);
+    console.log(`[render] "${merged.query}" (${merged.phase}) — round trip ${roundTripMs}ms across ${searchWorkers.length} workers (bible ${merged.bibleMs}ms, slowest source shard ${merged.maxSourceMs}ms)`, merged.perSourceMs);
 
-    const { rawQuery, phase } = msg;
+    const mergedSource = {
+      total: merged.sourceTotal,
+      top: merged.sourceParts.flat().sort((a, b) => (a.score ?? 0) - (b.score ?? 0)).slice(0, MERGE_TOP_CAP)
+    };
+    finishSearchResult(merged.rawQuery, merged.query, merged.phase, merged.bible, mergedSource);
+  }
 
+  // Only reach for spelling correction if the literal query found nothing
+  // anywhere (no claim entries, no Bible verses) — see finalizeRender for
+  // where a successful/failed correction ends up rendered.
+  function finishSearchResult(rawQuery, query, phase, bible, source) {
     if (phase === 'original') {
-      const entries = entriesFor(msg.query);
-      if (entries.length === 0 && msg.bible.total === 0) {
-        const attempt = correctQuery(msg.query);
+      const entries = entriesFor(query);
+      if (entries.length === 0 && bible.total === 0) {
+        const attempt = correctQuery(query);
         if (attempt.changed) {
-          pendingOriginalSource = msg.source;
+          pendingOriginalSource = source;
           requestSearch(rawQuery, attempt.corrected, 'correction');
           return;
         }
       }
-      finalizeRender(rawQuery, msg.query, false, entries, msg.bible, msg.source);
+      finalizeRender(rawQuery, query, false, entries, bible, source);
       return;
     }
 
     // phase === 'correction'
-    const entries = entriesFor(msg.query);
-    if (entries.length > 0 || msg.bible.total > 0) {
-      finalizeRender(rawQuery, msg.query, true, entries, msg.bible, msg.source);
+    const entries = entriesFor(query);
+    if (entries.length > 0 || bible.total > 0) {
+      finalizeRender(rawQuery, query, true, entries, bible, source);
     } else {
       // Correction didn't help either — fall back to the original query's
       // own source-text matches (if any), which are still valid even though
@@ -2252,12 +2298,51 @@
     el.innerHTML = `<span class="dot"></span>${text}`;
   }
 
+  // Bible is one indivisible index, so it lives in a single worker (index 0)
+  // rather than being sharded — the other workers just never get bible data
+  // and their bibleFuse stays null, which search-worker.js already handles.
+  function loadBibleIntoWorkers(verses) {
+    if (searchWorkers.length) searchWorkers[0].postMessage({ type: 'load', name: 'bible', data: verses });
+  }
+
+  // Splits source-text rows across the worker pool so every worker owns a
+  // disjoint slice of the ~30 collections and searches its slice in
+  // parallel with the others. A whole collection (e.g. all of the Qur'an,
+  // or all of one Hadith book) always goes to a single worker together —
+  // splitting one collection across workers would just mean re-merging its
+  // own results, for no benefit. Collections vary hugely in size (the
+  // Mahabharata's rows alone average ~7KB each, far above most other
+  // texts'), so this bin-packs by total *character count* rather than row
+  // count — row count alone under-weighted collections made of few but very
+  // long rows, leaving their worker the slowest shard even when every
+  // worker had a similar row total. Every worker gets a 'load' call even
+  // when its slice is empty, so a previous, larger assignment gets cleared.
+  function loadSourceIntoWorkers(rows) {
+    if (!searchWorkers.length) return;
+    const bySourceId = {};
+    rows.forEach(r => { (bySourceId[r.sourceId] = bySourceId[r.sourceId] || []).push(r); });
+
+    const weighOf = (sourceRows) => sourceRows.reduce((sum, r) => sum + (r.text ? r.text.length : 0), 0);
+    const buckets = searchWorkers.map(() => ({ rows: [], weight: 0 }));
+    Object.values(bySourceId)
+      .sort((a, b) => weighOf(b) - weighOf(a)) // largest collections placed first for better packing
+      .forEach((sourceRows) => {
+        const lightest = buckets.reduce((min, b) => (b.weight < min.weight ? b : min), buckets[0]);
+        lightest.rows.push(...sourceRows);
+        lightest.weight += weighOf(sourceRows);
+      });
+
+    buckets.forEach((bucket, i) => {
+      searchWorkers[i].postMessage({ type: 'load', name: 'source', data: bucket.rows });
+    });
+  }
+
   function buildBibleIndex(verses) {
     allBibleVerses = verses;
     bibleIndexReady = true;
     buildRealWordSet(verses);
     setBibleStatus('ready', `Full Bible loaded — ${verses.length.toLocaleString()} verses searchable offline`);
-    if (searchWorker) searchWorker.postMessage({ type: 'load', name: 'bible', data: verses });
+    loadBibleIntoWorkers(verses);
     if (searchInput.value.trim()) render();
     renderReadSourcePicker();
   }
@@ -2455,8 +2540,8 @@
     rows.forEach(r => {
       sourceByteSize[r.sourceId] = (sourceByteSize[r.sourceId] || 0) + (r.text ? r.text.length : 0) + (r.ref ? r.ref.length : 0);
     });
+    loadSourceIntoWorkers(rows); // always runs, even for [] — clears every worker's stale indices after an uninstall
     if (!rows.length) { renderReadSourcePicker(); return; }
-    if (searchWorker) searchWorker.postMessage({ type: 'load', name: 'source', data: rows });
     if (searchInput.value.trim()) render();
     renderReadSourcePicker();
   }
