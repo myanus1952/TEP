@@ -945,6 +945,27 @@
    * into a flat [{ ref, text }] list. If a source fails entirely, the app skips
    * it and reports it in Settings — it never fails silently or breaks the app.
    */
+
+  // Sutta titles for Digha Nikaya (1-34) and Majjhima Nikaya (1-152), used only
+  // to label "Read Full Text" groups — the canonical English titles from
+  // Sujato's translation, index 0 unused (suttas are numbered from 1).
+  const DN_TITLES = [null, "The Divine Net","The Fruits of the Ascetic Life","With Ambaṭṭha","With Soṇadaṇḍa","With Kūṭadanta","With Mahāli","With Jāliya","The Lion’s Roar to the Naked Ascetic Kassapa","With Poṭṭhapāda","With Subha","With Kevaḍḍha","With Lohicca","Experts in the Three Vedas","The Great Discourse on Traces Left Behind","The Great Discourse on Causation","The Great Discourse on the Buddha’s Extinguishment","King Mahāsudassana","With Janavasabha","The Great Steward","The Great Congregation","Sakka’s Questions","The Longer Discourse on Mindfulness Meditation","With Pāyāsi","About Pāṭikaputta","The Lion’s Roar at the Monastery of Lady Udumbarikā","The Wheel-Turning Monarch","What Came First","Inspiring Confidence","An Impressive Discourse","The Marks of a Great Man","Advice to Sigālaka","The Āṭānāṭiya Protection","Reciting in Concert","Up to Ten"
+  ];
+  // Shared by the sn-an-highlights source (fetchRows) and parseReadRef,
+  // so there's exactly one list to keep in sync, not two.
+  const SN_AN_HIGHLIGHTS = [
+    { path: 'sn/sn56/sn56.11', prefix: 'sn56.11', label: 'Samyutta Nikaya 56.11 (Setting the Wheel of Dhamma in Motion)' },
+    { path: 'sn/sn22/sn22.59', prefix: 'sn22.59', label: 'Samyutta Nikaya 22.59 (The Characteristic of Non-Self)' },
+    { path: 'sn/sn35/sn35.28', prefix: 'sn35.28', label: 'Samyutta Nikaya 35.28 (The Fire Sermon)' },
+    { path: 'sn/sn12/sn12.2', prefix: 'sn12.2', label: 'Samyutta Nikaya 12.2 (Analysis of Dependent Origination)' },
+    { path: 'sn/sn45/sn45.8', prefix: 'sn45.8', label: 'Samyutta Nikaya 45.8 (Analysis of the Noble Eightfold Path)' },
+    { path: 'sn/sn56/sn56.31', prefix: 'sn56.31', label: 'Samyutta Nikaya 56.31 (The Simsapa Leaves)' },
+    { path: 'an/an3/an3.65', prefix: 'an3.65', label: 'Anguttara Nikaya 3.65 (With the Kalamas)' }
+  ];
+
+  const MN_TITLES = [null, "The Root of All Things","All the Defilements","Heirs in the Teaching","Fear and Dread","Unblemished","One Might Wish","The Simile of the Cloth","Self-Effacement","Right View","Mindfulness Meditation","The Shorter Discourse on the Lion’s Roar","The Longer Discourse on the Lion’s Roar","The Longer Discourse on the Mass of Suffering","The Shorter Discourse on the Mass of Suffering","Measuring Up","Hard-heartedness","Jungle Thickets","The Honey-Cake","Two Kinds of Thought","How to Stop Thinking","The Simile of the Saw","The Simile of the Cobra","The Termite Mound","Chariots at the Ready","Sowing","The Noble Quest","The Shorter Simile of the Elephant’s Footprint","The Longer Simile of the Elephant’s Footprint","The Longer Simile of the Heartwood","The Shorter Simile of the Heartwood","The Shorter Discourse at Gosiṅga","The Longer Discourse at Gosiṅga","The Longer Discourse on the Cowherd","The Shorter Discourse on the Cowherd","The Shorter Discourse With Saccaka","The Longer Discourse With Saccaka","The Shorter Discourse on the Ending of Craving","The Longer Discourse on the Ending of Craving","The Longer Discourse at Assapura","The Shorter Discourse at Assapura","The People of Sālā","The People of Verañjā","The Great Elaboration","The Shorter Elaboration","The Shorter Discourse on Taking Up Practices","The Great Discourse on Taking Up Practices","The Inquirer","The Mendicants of Kosambī","On the Invitation of Divinity","The Condemnation of Māra","With Kandaraka","The Wealthy Citizen","A Trainee","With Potaliya the Householder","With Jīvaka","With Upāli","The Ascetic Who Behaved Like a Dog","With Prince Abhaya","The Many Kinds of Feeling","A Sure Bet","Advice to Rāhula at Ambalaṭṭhika","The Longer Advice to Rāhula","The Shorter Discourse With Māluṅkyaputta","The Longer Discourse With Māluṅkya","With Bhaddāli","The Simile of the Quail","At Cātumā","At Naḷakapāna","With Gulissāni","At Kīṭāgiri","To Vacchagotta on the Three Knowledges","With Vacchagotta on Fire","The Longer Discourse With Vacchagotta","With Dīghanakha","With Māgaṇḍiya","With Sandaka","The Longer Discourse with Sakuludāyī","With Uggāhamāna Samaṇamaṇḍikāputta","The Shorter Discourse With Sakuludāyī","With Vekhanasa","With Ghaṭīkāra","With Raṭṭhapāla","About King Maghadeva","At Madhurā","With Prince Bodhi","With Aṅgulimāla","Born From the Beloved","The Imported Cloth","Shrines to the Teaching","At Kaṇṇakatthala","With Brahmāyu","With Sela","With Assalāyana","With Ghoṭamukha","With Caṅkī","With Esukārī","With Dhanañjāni","With Vāseṭṭha","With Subha","With Saṅgārava","At Devadaha","The Five and Three","Is This What You Think Of Me?","At Sāmagāma","With Sunakkhatta","Conducive to the Imperturbable","With Moggallāna the Accountant","With Moggallāna the Guardian","The Longer Discourse on the Full-Moon Night","The Shorter Discourse on the Full-Moon Night","One by One","The Sixfold Purification","A True Person","What Should and Should Not Be Cultivated","Many Elements","At Isigili","The Great Forty","Mindfulness of Breathing","Mindfulness of the Body","Rebirth by Choice","The Shorter Discourse on Emptiness","The Longer Discourse on Emptiness","Incredible and Amazing","With Bakkula","The Level of the Tamed","With Bhūmija","With Anuruddha","Corruptions","The Foolish and the Astute","Messengers of the Gods","One Fine Night","Ānanda and One Fine Night","Mahākaccāna and One Fine Night","Lomasakaṅgiya and One Fine Night","The Shorter Analysis of Deeds","The Longer Analysis of Deeds","The Analysis of the Six Sense Fields","A Summary Recital and its Analysis","The Analysis of No Strife","The Analysis of the Elements","The Analysis of the Truths","The Analysis of Religious Donations","Advice to Anāthapiṇḍika","Advice to Channa","Advice to Puṇṇa","Advice from Nandaka","The Shorter Advice to Rāhula","Six By Six","The Great Discourse on What Relates to the Six Sense Fields","With the People of Nagaravinda","The Purification of Alms","The Development of the Faculties"
+  ];
+
   const SOURCE_TEXTS = [
     {
       id: 'quran',
@@ -1279,6 +1300,154 @@
       }
     },
     /*
+     * Digha Nikaya (Long Discourses) and Majjhima Nikaya (Middle Discourses) —
+     * the two most-cited collections in the Pali Canon's Sutta Pitaka, same
+     * translator/license/repo as Dhammapada above. Both use a clean numeric
+     * range with no gaps (verified against the repo's file listing), so they
+     * share the fetchSujatoNikaya() routine defined near stripHtml() instead
+     * of needing Dhammapada's hardcoded chunk list.
+     */
+    {
+      id: 'digha-nikaya',
+      label: 'Digha Nikaya (Long Discourses)',
+      tradition: 'Buddhism',
+      license: 'CC0 public domain dedication — Bhikkhu Sujato / SuttaCentral',
+      fetchRows: () => fetchSujatoNikaya('dn', 34, 'Digha Nikaya')
+    },
+    {
+      id: 'majjhima-nikaya',
+      label: 'Majjhima Nikaya (Middle Discourses)',
+      tradition: 'Buddhism',
+      license: 'CC0 public domain dedication — Bhikkhu Sujato / SuttaCentral',
+      fetchRows: () => fetchSujatoNikaya('mn', 152, 'Majjhima Nikaya')
+    },
+    /*
+     * Sutta Nipata — one of the oldest strata of the Pali Canon (Khuddaka
+     * Nikaya), 5 vaggas with a clean per-vagga file count (verified against
+     * the repo's file listing: 12,14,12,16,19). Same translator/license/repo.
+     */
+    {
+      id: 'sutta-nipata',
+      label: 'Sutta Nipata',
+      tradition: 'Buddhism',
+      license: 'CC0 public domain dedication — Bhikkhu Sujato / SuttaCentral',
+      fetchRows: async () => {
+        const BASE = 'https://raw.githubusercontent.com/suttacentral/bilara-data/80641fa4c579b4a49d7ec3e5c627cd606d498cba/translation/en/sujato/sutta/kn/snp';
+        const VAGGA_COUNTS = [12, 14, 12, 16, 19];
+        const targets = [];
+        VAGGA_COUNTS.forEach((count, vi) => {
+          for (let n = 1; n <= count; n++) targets.push({ vagga: vi + 1, n });
+        });
+        const rows = await Promise.all(targets.map(async ({ vagga, n }) => {
+          const url = `${BASE}/vagga${vagga}/snp${vagga}.${n}_translation-en-sujato.json`;
+          const text = await fetchSujatoVerse(url);
+          return text ? { ref: `Sutta Nipata ${vagga}.${n}`, text } : null;
+        }));
+        return rows.filter(Boolean);
+      }
+    },
+    /*
+     * Udana ("Heartfelt Sayings") — Khuddaka Nikaya, 8 vaggas of exactly 10
+     * suttas each (verified against the repo's file listing).
+     */
+    {
+      id: 'udana',
+      label: 'Udana',
+      tradition: 'Buddhism',
+      license: 'CC0 public domain dedication — Bhikkhu Sujato / SuttaCentral',
+      fetchRows: async () => {
+        const BASE = 'https://raw.githubusercontent.com/suttacentral/bilara-data/80641fa4c579b4a49d7ec3e5c627cd606d498cba/translation/en/sujato/sutta/kn/ud';
+        const targets = [];
+        for (let vagga = 1; vagga <= 8; vagga++) {
+          for (let n = 1; n <= 10; n++) targets.push({ vagga, n });
+        }
+        const rows = await Promise.all(targets.map(async ({ vagga, n }) => {
+          const url = `${BASE}/vagga${vagga}/ud${vagga}.${n}_translation-en-sujato.json`;
+          const text = await fetchSujatoVerse(url);
+          return text ? { ref: `Udana ${vagga}.${n}`, text } : null;
+        }));
+        return rows.filter(Boolean);
+      }
+    },
+    /*
+     * Itivuttaka ("This Was Said") — Khuddaka Nikaya, 112 short suttas with
+     * flat global numbering (iti1-iti112) but stored across 11 vagga folders;
+     * ITI_VAGGA_BOUNDS below is the upper sutta number of each vagga,
+     * verified against the repo's file listing.
+     */
+    {
+      id: 'itivuttaka',
+      label: 'Itivuttaka',
+      tradition: 'Buddhism',
+      license: 'CC0 public domain dedication — Bhikkhu Sujato / SuttaCentral',
+      fetchRows: async () => {
+        const BASE = 'https://raw.githubusercontent.com/suttacentral/bilara-data/80641fa4c579b4a49d7ec3e5c627cd606d498cba/translation/en/sujato/sutta/kn/iti';
+        const ITI_VAGGA_BOUNDS = [10, 20, 27, 37, 49, 59, 69, 79, 89, 99, 112];
+        const vaggaFor = (num) => {
+          for (let v = 0; v < ITI_VAGGA_BOUNDS.length; v++) {
+            if (num <= ITI_VAGGA_BOUNDS[v]) return v + 1;
+          }
+          return ITI_VAGGA_BOUNDS.length;
+        };
+        const rows = await Promise.all(Array.from({ length: 112 }, (_, i) => i + 1).map(async (num) => {
+          const vagga = vaggaFor(num);
+          const url = `${BASE}/vagga${vagga}/iti${num}_translation-en-sujato.json`;
+          const text = await fetchSujatoVerse(url);
+          return text ? { ref: `Itivuttaka ${num}`, text } : null;
+        }));
+        return rows.filter(Boolean);
+      }
+    },
+    /*
+     * Selected Suttas — a hand-picked set of the single most iconic suttas
+     * from the Samyutta and Anguttara Nikayas: the first sermon (Four Noble
+     * Truths, Middle Way), the second sermon (non-self), the Fire Sermon
+     * (third major sermon), dependent origination and the noble eightfold
+     * path formally defined, the "leaves in the hand" simile on the limited
+     * scope of what the Buddha taught, and the Kalama Sutta on not accepting
+     * claims on authority alone. These two Nikayas together hold thousands of
+     * suttas split across ~3,200 small, irregularly-ranged files (an1-an11,
+     * sn1-sn56 each subdivided further) — fetching the full corpus the way
+     * Digha/Majjhima are above was tried and rejected as impractical (way
+     * more requests than the rest of this app's sources combined, and no
+     * clean sequential numbering to generate the fetch list from). This list
+     * covers what a reader is actually likely to look for from these two
+     * collections without that cost.
+     */
+    {
+      id: 'sn-an-highlights',
+      label: 'Selected Suttas (Samyutta & Anguttara Nikayas)',
+      tradition: 'Buddhism',
+      license: 'CC0 public domain dedication — Bhikkhu Sujato / SuttaCentral',
+      fetchRows: async () => {
+        const results = await Promise.all(SN_AN_HIGHLIGHTS.map(t => fetchSujatoSutta(t.path, t.prefix, t.label)));
+        return results.flat();
+      }
+    },
+    /*
+     * Heart Sutra — both recensions (Larger, with its narrative frame, and
+     * Smaller, the version normally chanted), from Max Muller's 1894
+     * translation (Sacred Books of the East vol. 49). Hand-corrected against
+     * the archive.org OCR scan (buddhistmahy02cowe): the underlying prose is
+     * clean, but Muller's Sanskrit transliteration diacritics (e.g.
+     * "Pra^;7aparamita", "^'ariputra") don't survive OCR at all, so proper
+     * nouns and technical terms were manually restored to plain spelling
+     * (Prajnaparamita, Shariputra, Bhagavat, Nirvana, etc.) — this is the
+     * one source this session that's typed by hand rather than scripted,
+     * since at ~700 words total it was faster and more reliable than writing
+     * a cleanup pass for a two-paragraph text.
+     */
+    {
+      id: 'heart-sutra',
+      label: 'Heart Sutra',
+      tradition: 'Buddhism',
+      license: 'Public domain — F. Max Muller translation (1894), Sacred Books of the East vol. 49',
+      urls: ['./heart-sutra.json'],
+      parse: (data) => Array.isArray(data)
+        ? data.map((row) => ({ ref: row.ref, text: stripHtml(row.text) }))
+        : []
+    },
+    /*
      * The six canonical Sunni hadith collections (Kutub al-Sittah), from the
      * same author/project as the Qur'an source above (fawazahmed0), same
      * Unlicense terms. Each collection is one large JSON file — verified
@@ -1531,6 +1700,118 @@
       .replace(/&#0*39;/gi, "'")
       .replace(/\s+/g, ' ')
       .trim();
+  }
+
+  /*
+   * Shared fetch routine for whole-Nikaya SuttaCentral sources (Digha and
+   * Majjhima) — each sutta is one file, numbered sequentially with no gaps,
+   * so unlike Dhammapada above no hardcoded chunk list is needed. Segment ids
+   * look like "dn1:1.1.1" (sutta:section.paragraph.sentence, depth varies by
+   * sutta — some suttas add an extra top-level "chapter" number, e.g. long
+   * suttas like DN 16). Rather than assume a fixed depth, every segment is
+   * grouped with its siblings by dropping only the last (sentence-level)
+   * component, then groups are numbered sequentially in file order — this
+   * produces one row per paragraph regardless of how deeply that sutta happens
+   * to be subdivided. Segments under "0" (nikaya/sutta title) are headings,
+   * not body text, and are skipped — same convention as Dhammapada's "0.x".
+   */
+  // Splits one bilara segment map into ordered paragraph-level text blocks —
+  // groups every segment by its id with the last (sentence-level) component
+  // dropped, in first-appearance order. `idPrefix` is everything before the
+  // colon in that file's segment ids (e.g. "dn1", or "sn56.11" for a Samyutta
+  // sutta, whose own number already contains a dot).
+  function groupSujatoSegments(data, idPrefix) {
+    const escaped = idPrefix.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+    const re = new RegExp(`^${escaped}:([\\d.]+)$`);
+    const groupOrder = [];
+    const groupLines = {};
+    Object.keys(data).forEach((segId) => {
+      const m = segId.match(re);
+      if (!m) return;
+      const parts = m[1].split('.');
+      if (parts[0] === '0') return;
+      const groupKey = parts.length > 1 ? parts.slice(0, -1).join('.') : parts[0];
+      const clean = stripHtml(String(data[segId])).trim();
+      if (!clean) return;
+      if (!(groupKey in groupLines)) {
+        groupLines[groupKey] = [];
+        groupOrder.push(groupKey);
+      }
+      groupLines[groupKey].push(clean);
+    });
+    return groupOrder
+      .map((key) => groupLines[key].join(' ').replace(/\s+/g, ' ').trim())
+      .filter((text) => text.length > 0);
+  }
+
+  async function fetchSujatoNikaya(abbrev, count, label) {
+    const BASE = `https://raw.githubusercontent.com/suttacentral/bilara-data/80641fa4c579b4a49d7ec3e5c627cd606d498cba/translation/en/sujato/sutta/${abbrev}`;
+    const nums = Array.from({ length: count }, (_, i) => i + 1);
+    const chunks = await Promise.all(nums.map(async (n) => {
+      try {
+        const res = await fetch(`${BASE}/${abbrev}${n}_translation-en-sujato.json`);
+        if (!res.ok) return [];
+        const data = await res.json();
+        return groupSujatoSegments(data, `${abbrev}${n}`).map((text, i) => ({
+          ref: `${label} ${n}.${i + 1}`,
+          text
+        }));
+      } catch (err) {
+        return [];
+      }
+    }));
+    return chunks.flat();
+  }
+
+  // Fetches one specific SuttaCentral file at `path` (relative to the sujato
+  // sutta directory) and splits it into paragraph rows via groupSujatoSegments,
+  // for the curated Samyutta/Anguttara highlights list — those Nikayas are
+  // chunked into thousands of small irregularly-ranged files (verified via
+  // the repo's file tree), too many and too fragile to fetch a full range of
+  // like Digha/Majjhima above, so only a hand-picked list of the single most
+  // iconic suttas is fetched, each by its known exact file path.
+  async function fetchSujatoSutta(path, idPrefix, label) {
+    const BASE = 'https://raw.githubusercontent.com/suttacentral/bilara-data/80641fa4c579b4a49d7ec3e5c627cd606d498cba/translation/en/sujato/sutta';
+    try {
+      const res = await fetch(`${BASE}/${path}_translation-en-sujato.json`);
+      if (!res.ok) return [];
+      const data = await res.json();
+      return groupSujatoSegments(data, idPrefix).map((text, i) => ({
+        ref: `${label} ${i + 1}`,
+        text
+      }));
+    } catch (err) {
+      return [];
+    }
+  }
+
+  /*
+   * Fetches one SuttaCentral/Sujato file that is itself a single short sutta
+   * (Sutta Nipata, Udana, Itivuttaka verses) rather than a long discourse —
+   * unlike fetchSujatoNikaya above, there's no internal paragraph structure
+   * worth splitting on, so every non-"0.x" segment in the file is just
+   * concatenated into one row's text, the same way Dhammapada's verses work.
+   */
+  async function fetchSujatoVerse(url) {
+    try {
+      const res = await fetch(url);
+      if (!res.ok) return null;
+      const data = await res.json();
+      const lines = [];
+      Object.keys(data).forEach((segId) => {
+        // segId's own prefix can itself contain a dot (e.g. "snp1.1:0.1"),
+        // so split on the LAST colon rather than assuming a bare \w+ prefix.
+        const m = segId.match(/:([\d.]+)$/);
+        if (!m) return;
+        if (m[1].split('.')[0] === '0') return;
+        const clean = stripHtml(String(data[segId])).trim();
+        if (clean) lines.push(clean);
+      });
+      const text = lines.join(' ').replace(/\s+/g, ' ').trim();
+      return text || null;
+    } catch (err) {
+      return null;
+    }
   }
 
   /*
@@ -2090,6 +2371,13 @@
     { key: 'manusmriti', label: 'Manusmriti (Laws of Manu)', tradition: 'Hinduism' },
     { key: 'mahabharata', label: 'The Mahabharata', tradition: 'Hinduism' },
     { key: 'dhammapada', label: 'Dhammapada', tradition: 'Buddhism' },
+    { key: 'digha-nikaya', label: 'Digha Nikaya (Long Discourses)', tradition: 'Buddhism' },
+    { key: 'majjhima-nikaya', label: 'Majjhima Nikaya (Middle Discourses)', tradition: 'Buddhism' },
+    { key: 'sutta-nipata', label: 'Sutta Nipata', tradition: 'Buddhism' },
+    { key: 'udana', label: 'Udana', tradition: 'Buddhism' },
+    { key: 'itivuttaka', label: 'Itivuttaka', tradition: 'Buddhism' },
+    { key: 'sn-an-highlights', label: 'Selected Suttas (Samyutta & Anguttara)', tradition: 'Buddhism' },
+    { key: 'heart-sutra', label: 'Heart Sutra', tradition: 'Buddhism' },
     { key: 'baltimore-catechism', label: 'Baltimore Catechism', tradition: 'Catholicism' },
     { key: 'deuterocanon', label: 'Apocrypha / Deuterocanon', tradition: 'Apocrypha' },
     { key: 'trent-canons', label: 'Council of Trent — Canons', tradition: 'Catholicism' },
@@ -2210,6 +2498,51 @@
         chapter: adhyaya * 10 + pada,
         verse: parseInt(m[3], 10)
       };
+    }
+    if (sourceKey === 'digha-nikaya' || sourceKey === 'majjhima-nikaya') {
+      const label = sourceKey === 'digha-nikaya' ? 'Digha Nikaya' : 'Majjhima Nikaya';
+      const titles = sourceKey === 'digha-nikaya' ? DN_TITLES : MN_TITLES;
+      const m = ref.match(new RegExp(`^${label} (\\d+)\\.(\\d+)$`));
+      if (!m) return null;
+      const n = parseInt(m[1], 10);
+      const title = titles[n] || '';
+      return { group: `${n}. ${title}`, chapter: n, verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'heart-sutra') {
+      const m = ref.match(/^Heart Sutra \((\w+) Recension\) (\d+)$/);
+      if (!m) return null;
+      return { group: `${m[1]} Recension`, chapter: m[1] === 'Smaller' ? 1 : 2, verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'sn-an-highlights') {
+      const m = ref.match(/^(.+) (\d+)$/);
+      if (!m) return null;
+      const idx = SN_AN_HIGHLIGHTS.findIndex(t => t.label === m[1]);
+      return { group: m[1], chapter: idx === -1 ? 999 : idx, verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'sutta-nipata') {
+      const m = ref.match(/^Sutta Nipata (\d+)\.(\d+)$/);
+      if (!m) return null;
+      const SNP_VAGGA_NAMES = ['', 'Uragavagga (Serpent)', 'Culavagga (Minor Chapter)', 'Mahavagga (Great Chapter)', 'Atthakavagga (Chapter of Eights)', 'Parayanavagga (The Way to the Far Shore)'];
+      const v = parseInt(m[1], 10);
+      return { group: SNP_VAGGA_NAMES[v] || `Vagga ${v}`, chapter: v, verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'udana') {
+      const m = ref.match(/^Udana (\d+)\.(\d+)$/);
+      if (!m) return null;
+      const UD_VAGGA_NAMES = ['', 'Bodhivagga', 'Mucalindavagga', 'Nandavagga', 'Meghiyavagga', 'Sonavagga', 'Jaccandhavagga', 'Culavagga', 'Pataligamiyavagga'];
+      const v = parseInt(m[1], 10);
+      return { group: UD_VAGGA_NAMES[v] || `Vagga ${v}`, chapter: v, verse: parseInt(m[2], 10) };
+    }
+    if (sourceKey === 'itivuttaka') {
+      const m = ref.match(/^Itivuttaka (\d+)$/);
+      if (!m) return null;
+      const ITI_VAGGA_BOUNDS = [10, 20, 27, 37, 49, 59, 69, 79, 89, 99, 112];
+      const n = parseInt(m[1], 10);
+      let vagga = ITI_VAGGA_BOUNDS.length;
+      for (let v = 0; v < ITI_VAGGA_BOUNDS.length; v++) {
+        if (n <= ITI_VAGGA_BOUNDS[v]) { vagga = v + 1; break; }
+      }
+      return { group: `Vagga ${vagga}`, chapter: vagga, verse: n };
     }
     if (sourceKey === 'rerum-novarum' || sourceKey === 'ineffabilis-deus') {
       const m = ref.match(/para\.\s*(\d+)$/);
